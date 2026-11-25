@@ -1,0 +1,33 @@
+{
+  "teammates": [],
+  "alwaysForbidden": ["**/.*/**", ".*", "CLAUDE*.md", "AGENTS.md", "GEMINI.md"],
+  "smallPaths": [
+    "docs/design/**",
+    "src/ui/**",
+    "src/styles/**",
+    "src/app/**",
+    "src/features/*/pages/**",
+    "src/features/*/components/**"
+  ],
+  "reportPaths": ["docs/governance/teammate/reports/**"],
+  "requestPaths": ["docs/governance/teammate/requests/**"],
+  "forbiddenPaths": [
+    "src/app/routes.tsx",
+    "src/core/**",
+    "src/data/**",
+    "src/types/**",
+    "scripts/**",
+    ".claude/**",
+    ".github/**",
+    "CLAUDE.md",
+    "docs/governance/**",
+    "docs/CONTRACTS.md",
+    "package.json",
+    "package-lock.json",
+    "*.config.*",
+    "tsconfig*.json",
+    "tsconfig/**",
+    "index.html",
+    ".gitignore"
+  ]
+}

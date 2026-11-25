@@ -1,0 +1,15 @@
+node_modules/
+dist/
+artifact/
+coverage/
+.DS_Store
+*.log
+.vite/
+docs/board/live-feedback.jsonl
+docs/board/outreach-*.json
+docs/board/outreach-targets*.md
+docs/board/outreach-log.md
+docs/board/swarm-snapshot.json
+docs/board/watchdog-state.json
+.claude/worktrees/
+.claude/settings.local.json

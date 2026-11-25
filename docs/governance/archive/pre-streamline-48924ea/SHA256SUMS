@@ -1,0 +1,16 @@
+c3528ade9cd155b389ba6f9834c2f1795066221a1ad3158e5cc2a69df6385875  ./.claude/commands/board-sync.md
+9bfc81536b4ad8550ce93ded49b5ff4cd6c80b9a72f0c59fe8d0ecf0855fd662  ./.claude/commands/ceo-sync.md
+09cd7c51b0b3bec87f10c240d95089f686765db5566e28a1d6ef538311d2d045  ./.claude/commands/observer-review.md
+621ed6d386de82825ceee08cf01156c63f04696ce8995d1ed31a7ee6ccd7af87  ./.claude/commands/worker-status.md
+043d6fd4d8629f9fe92007f55aee05c8c75036d790324a04d5f2bef327dd52ec  ./AGENTS.md
+9c2700d6f7ed58e348e866f63aa4b5d9ac1cac97f0eb4335c49325f3ed9171fb  ./CLAUDE.md
+51c80e3f22157228552371f8a421d34b083292f797f811b92f90bc6d00920b47  ./docs/board/RELAY.md
+f743eaf4e1d8062d67c5aa413d7dffeefaeec011a22eb3c7dea4050b079ede21  ./docs/board/handoff-state.json
+abfb541d5dd3d3ecefee6b90dc7496af7d6716eaafe443de9388263c6e1d9d6c  ./docs/governance/BOARD_PROTOCOL.md
+0fccb2531efe9181c6e11af30f85ed8d66193ca80e234e34c819be662874ee46  ./docs/governance/PROMPTS.md
+a78a80fc46e4fa616a44af8e827179af167340a1bcc4b66bb5c6b490a0b7e839  ./docs/governance/STATUS.md
+2729d94c200813b0bfa5085954ef1ad2f0238781780dc9e318abc77866faa3eb  ./docs/governance/TEAM.md
+192795762478cfb2a089929bbf01f7c534996babbd4aed6625afb5484e83f092  ./docs/governance/observer-reports/TEMPLATE.md
+f079603217a4bf92dbc2bdef3208e1c5dc6ee6806a5c0e0934138e3fa1d2192f  ./docs/governance/proposals/TEMPLATE.md
+cf4ab0f603c64c6a29dc1964a680bdf20bfa3424e8f7d8f973380d989010ebad  ./scripts/agent-areas.json
+6a22e1d9f0ab01a24c97124423cd2939d72cd3ef04ef24ae28e2bf4da90dbddd  ./scripts/guard-ownership.mjs

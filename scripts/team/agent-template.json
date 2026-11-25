@@ -1,0 +1,22 @@
+{
+  "notes": {
+    "engine": "cli runs the plain Claude Code CLI, which loads CLAUDE.md and the ownership hook from the project.",
+    "timeoutSec": "Must be set. With no timeout the adapter gives its Claude CLI version check only 1 second, and runs fail with 'could not determine the installed version'.",
+    "heartbeat": "No timer. Agents wake when assigned work or when a blocker finishes.",
+    "missing": "cwd, env and command cannot be set with an agent key. The working folder comes from the project workspace; an absolute command needs board access."
+  },
+  "adapterType": "claude_local",
+  "adapterConfig": {
+    "model": "claude-sonnet-5-5",
+    "engine": "cli",
+    "dangerouslySkipPermissions": true,
+    "timeoutSec": 7200,
+    "graceSec": 30
+  },
+  "runtimeConfig": {
+    "heartbeat": {
+      "enabled": false,
+      "wakeOnDemand": true
+    }
+  }
+}

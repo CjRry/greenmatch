@@ -1,0 +1,45 @@
+{
+  "name": "greenmatch",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "綠媒 GreenMatch — 中小企業減碳媒合平台 Demo",
+  "scripts": {
+    "dev": "vite --port 5173 --strictPort",
+    "build": "tsc -p tsconfig.app.json --noEmit && vite build && node scripts/to-artifact.mjs",
+    "preview": "vite preview --port 4173 --strictPort",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit",
+    "test": "vitest run",
+    "lint:boundaries": "node scripts/lint-boundaries.mjs",
+    "check": "npm run typecheck && vitest run && node scripts/lint-boundaries.mjs",
+    "check:market": "tsc -p tsconfig/market.json --noEmit && vitest run src/features/market --passWithNoTests && node scripts/lint-boundaries.mjs market",
+    "check:workspace": "tsc -p tsconfig/workspace.json --noEmit && vitest run src/features/workspace --passWithNoTests && node scripts/lint-boundaries.mjs workspace",
+    "check:ai": "tsc -p tsconfig/ai.json --noEmit && vitest run src/features/ai --passWithNoTests && node scripts/lint-boundaries.mjs ai",
+    "check:carbon": "tsc -p tsconfig/carbon.json --noEmit && vitest run src/features/carbon --passWithNoTests && node scripts/lint-boundaries.mjs carbon",
+    "check:qa": "tsc -p tsconfig/qa.json --noEmit && vitest run tests --passWithNoTests && node scripts/lint-boundaries.mjs qa",
+    "export-seed": "node scripts/export-seed.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "1.61.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-router": "8.4.0",
+    "recharts": "3.10.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
+    "@testing-library/dom": "10.4.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.1",
+    "@types/node": "26.6.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.1.2",
+    "happy-dom": "21.0.4",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3",
+    "vite": "8.3.4",
+    "vite-plugin-singlefile": "2.3.4",
+    "vitest": "5.0.5"
+  }
+}

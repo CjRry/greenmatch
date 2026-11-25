@@ -1,0 +1,105 @@
+/*
+ * 綠媒 GreenMatch design tokens.
+ * Layout concept: a B2B work tool that reads like an energy meter panel. Calm neutral ground,
+ * deck green for action and progress, deck navy for structure and data, mono numerals for kWh and tCO2e.
+ * Every color lives here. Components use the Tailwind names mapped in index.css, never raw hex.
+ */
+:root {
+  --gm-canvas: #f4f7f5;
+  --gm-surface: #ffffff;
+  --gm-sunken: #ebf0ed;
+  --gm-line: #d8e1dc;
+  --gm-line-strong: #b9c7c0;
+  --gm-ink: #13241d;
+  --gm-ink-soft: #33463e;
+  --gm-muted: #5c6e66;
+  --gm-brand: #2e9e6a;
+  --gm-brand-strong: #1f7f52;
+  --gm-brand-soft: #e3f3ea;
+  --gm-on-brand: #ffffff;
+  --gm-navy: #1e4a6e;
+  --gm-navy-strong: #153650;
+  --gm-navy-soft: #e4edf5;
+  --gm-on-navy: #ffffff;
+  --gm-warn: #b7791f;
+  --gm-warn-soft: #fbf1dd;
+  --gm-danger: #c0392b;
+  --gm-danger-soft: #fbe7e4;
+  --gm-chart-1: #1e4a6e;
+  --gm-chart-2: #2e9e6a;
+  --gm-chart-3: #c9a227;
+  --gm-chart-4: #7a5ea8;
+  --gm-chart-5: #d1603d;
+  --gm-chart-grid: #e1e8e4;
+  --gm-focus: #2e9e6a;
+  --gm-shadow: 0 1px 2px rgb(19 36 29 / 0.06), 0 4px 16px rgb(19 36 29 / 0.06);
+  --gm-overlay: rgb(10 20 16 / 0.45);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --gm-canvas: #0d1512;
+    --gm-surface: #141f1b;
+    --gm-sunken: #0f1915;
+    --gm-line: #24342d;
+    --gm-line-strong: #34493f;
+    --gm-ink: #e5eee9;
+    --gm-ink-soft: #c3d1ca;
+    --gm-muted: #93a69d;
+    --gm-brand: #3dbb81;
+    --gm-brand-strong: #5fd29c;
+    --gm-brand-soft: #16352a;
+    --gm-on-brand: #06140e;
+    --gm-navy: #8bb8de;
+    --gm-navy-strong: #b3d2ec;
+    --gm-navy-soft: #172a3a;
+    --gm-on-navy: #08131d;
+    --gm-warn: #e0a84a;
+    --gm-warn-soft: #33270f;
+    --gm-danger: #ef7a6c;
+    --gm-danger-soft: #3a1814;
+    --gm-chart-1: #8bb8de;
+    --gm-chart-2: #3dbb81;
+    --gm-chart-3: #e2c25a;
+    --gm-chart-4: #b49ae0;
+    --gm-chart-5: #ef8d6b;
+    --gm-chart-grid: #22322b;
+    --gm-focus: #5fd29c;
+    --gm-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 16px rgb(0 0 0 / 0.3);
+    --gm-overlay: rgb(0 0 0 / 0.6);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --gm-canvas: #0d1512;
+  --gm-surface: #141f1b;
+  --gm-sunken: #0f1915;
+  --gm-line: #24342d;
+  --gm-line-strong: #34493f;
+  --gm-ink: #e5eee9;
+  --gm-ink-soft: #c3d1ca;
+  --gm-muted: #93a69d;
+  --gm-brand: #3dbb81;
+  --gm-brand-strong: #5fd29c;
+  --gm-brand-soft: #16352a;
+  --gm-on-brand: #06140e;
+  --gm-navy: #8bb8de;
+  --gm-navy-strong: #b3d2ec;
+  --gm-navy-soft: #172a3a;
+  --gm-on-navy: #08131d;
+  --gm-warn: #e0a84a;
+  --gm-warn-soft: #33270f;
+  --gm-danger: #ef7a6c;
+  --gm-danger-soft: #3a1814;
+  --gm-chart-1: #8bb8de;
+  --gm-chart-2: #3dbb81;
+  --gm-chart-3: #e2c25a;
+  --gm-chart-4: #b49ae0;
+  --gm-chart-5: #ef8d6b;
+  --gm-chart-grid: #22322b;
+  --gm-focus: #5fd29c;
+  --gm-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 16px rgb(0 0 0 / 0.3);
+  --gm-overlay: rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}

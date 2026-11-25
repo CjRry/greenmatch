@@ -1,0 +1,14 @@
+{
+  "projectId": "5dff7bab-f46c-4e38-8a5b-128dcfe6d4c7",
+  "goalId": "7ae974ee-976d-42b5-9e11-af8adeb79159",
+  "workspaceCwd": "/Users/chris/Documents/ESCO",
+  "serverPort": 3100,
+  "boardUserId": "local-board",
+  "ceoAgentId": "96cbc07c-bf76-4b4a-ab1f-e8bc34022f13",
+  "ceoEnvFile": "~/.paperclip/claudecoder.env",
+  "reviewerArea": "qa",
+  "minClaudeCli": {
+    "claude-sonnet-5-5": "2.1.284",
+    "claude-opus-5-5": "2.1.280"
+  }
+}

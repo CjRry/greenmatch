@@ -1,0 +1,104 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+/*
+ * The default Tailwind palette is cleared on purpose: only the tokens below exist as color
+ * utilities (bg-surface, text-muted, border-line, ...), so every color follows light and dark mode.
+ * Do not use the `dark:` variant; tokens switch themes on their own.
+ */
+@theme inline {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-canvas: var(--gm-canvas);
+  --color-surface: var(--gm-surface);
+  --color-sunken: var(--gm-sunken);
+  --color-line: var(--gm-line);
+  --color-line-strong: var(--gm-line-strong);
+  --color-ink: var(--gm-ink);
+  --color-ink-soft: var(--gm-ink-soft);
+  --color-muted: var(--gm-muted);
+  --color-brand: var(--gm-brand);
+  --color-brand-strong: var(--gm-brand-strong);
+  --color-brand-soft: var(--gm-brand-soft);
+  --color-on-brand: var(--gm-on-brand);
+  --color-navy: var(--gm-navy);
+  --color-navy-strong: var(--gm-navy-strong);
+  --color-navy-soft: var(--gm-navy-soft);
+  --color-on-navy: var(--gm-on-navy);
+  --color-warn: var(--gm-warn);
+  --color-warn-soft: var(--gm-warn-soft);
+  --color-danger: var(--gm-danger);
+  --color-danger-soft: var(--gm-danger-soft);
+  --color-chart-1: var(--gm-chart-1);
+  --color-chart-2: var(--gm-chart-2);
+  --color-chart-3: var(--gm-chart-3);
+  --color-chart-4: var(--gm-chart-4);
+  --color-chart-5: var(--gm-chart-5);
+  --color-chart-grid: var(--gm-chart-grid);
+  --color-overlay: var(--gm-overlay);
+
+  --font-sans: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+  --font-display: 'Archivo', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-card: var(--gm-shadow);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--gm-canvas);
+    color: var(--gm-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    line-height: 1.3;
+  }
+  :focus-visible {
+    outline: 2px solid var(--gm-focus);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--gm-brand-soft);
+  }
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Side gutter that also clears a phone's side system bar. Use on the outer wrapper of a band. */
+  .gutter {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

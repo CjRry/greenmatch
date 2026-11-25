@@ -1,0 +1,7 @@
+{
+  "679a4ad7-c7e5-4bc7-a262-ed0f4916b2c3": { "area": "market", "name": "市集前端工程師" },
+  "c6ce91cb-bcab-48ca-b0c9-93091b8ead7f": { "area": "workspace", "name": "工作台前端工程師" },
+  "445c53d9-32c4-4de3-a83b-529e05458135": { "area": "ai", "name": "AI 與媒合工程師" },
+  "b9ecb33c-ac36-49eb-9e7e-804e8df198ca": { "area": "carbon", "name": "碳盤查工程師" },
+  "6777f56d-ec9e-43ad-9c9c-568fae404cc0": { "area": "qa", "name": "QA 工程師" }
+}

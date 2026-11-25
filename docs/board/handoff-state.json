@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "batonHolder": "antigravity",
+  "relayCount": 0,
+  "lastHandoffAt": "2026-11-13T15:49:00+08:00",
+  "currentRound": 5,
+  "personaScores": {
+    "factory": { "round": 5, "total": 95, "nps": 9 },
+    "vendor": { "round": 5, "total": 97, "nps": 9 }
+  },
+  "publicUrl": "https://greg-workshops-carlos-internship.trycloudflare.com",
+  "originPort": 4173,
+  "devPort": 5173,
+  "gmailAccount": "chris0308.lee@gmail.com",
+  "gmailLabel": "GreenMatch-feedback",
+  "outreachWaveSize": 20,
+  "outreachMinGapMinutes": 40,
+  "bounceRateStopThreshold": 0.10,
+  "lastSeenBoardSeq": 73,
+  "outreachPaused": true,
+  "outreachPausedAt": "2026-11-13T16:00:00+08:00",
+  "outreachPausedBy": "user ruling (recorded by Fable); see docs/governance/STATUS.md and PROP-0001",
+  "notesForNextDirector": "OUTREACH PAUSED BY USER 2026-11-13 16:00: send NO email (no Batch 4/5, no follow-ups) until the user lifts the pause. Round 5 is built, verified (33/33 files, 400/400 tests), and live on publicUrl. Batches 1-3 (60 initial invites) + 19 polite Batch 1 follow-ups sent with 1 bounce (V26, 1.67%) and 1 auto-reply (V05). Pending Batch 4 (M31-M40, V31-V40) and Batch 5 (M41-M50, V41-V50) are in docs/board/outreach-wave2.json. Keep cloudflared pid alive so publicUrl never changes."
+}

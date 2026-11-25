@@ -1,0 +1,4 @@
+{
+  "extends": "../tsconfig.json",
+  "include": ["../src/types", "../src/core", "../src/ui", "../src/test", "../src/data", "../src/vite-env.d.ts", "../src/features/market"]
+}
