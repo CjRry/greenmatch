@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router'
-import { BookOpen, Building2, ClipboardList, Compass, FileCheck2, FilePlus2, FileSpreadsheet, House, Leaf, MessageSquareHeart, MoreHorizontal, ShieldCheck, SlidersHorizontal, UserRound } from 'lucide-react'
+import { Archive, BookOpen, Building2, ClipboardList, Compass, FilePlus2, FileSpreadsheet, House, Leaf, MessageSquareHeart, MoreHorizontal, ShieldCheck, SlidersHorizontal, UserRound } from 'lucide-react'
 import { paths } from '../core/paths'
 import { useSession } from '../core/session'
 import { useCollection } from '../core/store/StoreProvider'
@@ -20,7 +20,7 @@ function navFor(role: Role | null): { top: NavItem[]; bottom: NavItem[] } {
   const home: NavItem = { to: paths.home(), label: '首頁', icon: <House className="size-5" aria-hidden />, end: true }
   const vendors: NavItem = { to: paths.vendors(), label: '廠商名錄', icon: <Building2 className="size-5" aria-hidden /> }
   const needs: NavItem = { to: paths.needs(), label: '需求市集', icon: <ClipboardList className="size-5" aria-hidden /> }
-  const me: NavItem = { to: paths.me(), label: '我的', icon: <UserRound className="size-5" aria-hidden />, end: true }
+  const me: NavItem = { to: paths.me(), label: '我的資料', icon: <UserRound className="size-5" aria-hidden />, end: true }
   const feedback: NavItem = {
     to: paths.feedback(),
     label: '試用回饋',
@@ -34,11 +34,11 @@ function navFor(role: Role | null): { top: NavItem[]; bottom: NavItem[] } {
     const carbon: NavItem = { to: paths.carbon(), label: '碳盤查', icon: <Leaf className="size-5" aria-hidden /> }
     return { top: [me, billCheckup, factoryFacts, newNeed, carbon, vendors], bottom: [home, billCheckup, factoryFacts, newNeed, me] }
   }
-  if (role === 'vendor') return { top: [me, needs, vendors], bottom: [home, needs, vendors, me, feedback] }
+  const library: NavItem = { to: paths.library(), label: '案例儲存庫', icon: <Archive className="size-5" aria-hidden />, end: true }
+  if (role === 'vendor') return { top: [me, needs, vendors, library], bottom: [home, needs, vendors, me, feedback] }
   const billCheckup: NavItem = { to: paths.billCheckup(), label: '電費單健檢', icon: <FileSpreadsheet className="size-5" aria-hidden />, end: true }
-  const publicCases: NavItem = { to: paths.publicCases(), label: '公開案例', icon: <FileCheck2 className="size-5" aria-hidden />, end: true }
   const about: NavItem = { to: paths.about(), label: '關於我們', icon: <ShieldCheck className="size-5" aria-hidden />, end: true }
-  return { top: [billCheckup, publicCases, vendors, needs, about], bottom: [home, billCheckup, publicCases, vendors] }
+  return { top: [billCheckup, library, vendors, needs, about], bottom: [home, billCheckup, library, vendors] }
 }
 
 /** The deck's hub diagram as a mark: the platform in the middle, a factory and a vendor on each side. */
@@ -82,7 +82,9 @@ function TrialGuideBar({ role, isDemo }: { role: Role | null; isDemo: boolean })
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
   const ownVendorCaseId = vendorCases[0]?.id
 
-  if (!role && (location.pathname === '/' || location.pathname === '/bill-checkup' || location.pathname === '/about' || location.pathname === '/methodology')) return null
+  // The home page is the marketplace only; the walkthrough lives in 案例儲存庫 → 如何使用 / 示範體驗.
+  if (location.pathname === '/') return null
+  if (!role && (location.pathname === '/bill-checkup' || location.pathname === '/about' || location.pathname === '/methodology')) return null
   if (role && !isDemo && ((role === 'factory' && factoryCases.length > 0) || (role === 'vendor' && vendorCases.length > 0))) {
     return null
   }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { resolveFactoryFacts } from '../../../core/domain/factoryFacts'
 import { LocalStore } from '../../../core/store/local'
 import type { Company } from '../../../core/types'
@@ -11,21 +11,45 @@ import NeedsBoard from './NeedsBoard'
 import NeedDetail from './NeedDetail'
 import VendorDirectory from './VendorDirectory'
 import VendorProfile from './VendorProfile'
+import InstallDetail from './InstallDetail'
+import CaseLibrary from './CaseLibrary'
 import FactoryProfile from './FactoryProfile'
 import Feedback, { buildFeedbackMail, computeWeightedScore } from './Feedback'
 
+/** Links to single installs inside a region (skips help links such as 怎麼看封面). */
+function installLinks(region: HTMLElement): HTMLElement[] {
+  return within(region)
+    .getAllByRole('link')
+    .filter((a) => a.getAttribute('href')?.includes('/installs/'))
+}
+
 describe('market pages with seed data', () => {
-  it('Landing shows the bill-checkup pitch, primary CTAs, 4-to-3 preview without demo data on first screen, and collapsed platform details', async () => {
+  it('Landing lists vendors as collections with their latest installs, and keeps the samples out of the first screen', async () => {
     renderPage(<Landing />)
-    expect(await screen.findByRole('heading', { level: 1, name: /免費電費與節能健檢：\s*看電費單就知道現在能省多少、碳排多少/ })).toBeTruthy()
+    expect(await screen.findByRole('heading', { level: 1, name: '找節能廠商' })).toBeTruthy()
     expect(screen.getByRole('link', { name: '免費做電費單健檢' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: '用我的工廠資料開始' })).toBeTruthy()
-    expect(screen.getByLabelText('電費單 4 欄變成健檢報告 3 行結果')).toBeTruthy()
-    expect(screen.getByText(/NT\$ 19,006/)).toBeTruthy()
-    expect(screen.getByText(/447\.4 tCO2e/)).toBeTruthy()
-    expect(screen.getByText(/能源署 114 年 0\.466 係數/)).toBeTruthy()
-    expect(screen.getByText('真實公開案例：電費與回本換算準不準')).toBeTruthy()
-    expect(screen.getByText(/平台介紹（/)).toBeTruthy()
+    expect(screen.getByRole('region', { name: '精選廠商' })).toBeTruthy()
+    const ranking = screen.getByRole('region', { name: '熱門節能廠商' })
+    expect(within(ranking).getAllByRole('link', { name: /有限公司|工程行/ }).length).toBeGreaterThanOrEqual(10)
+    const latest = screen.getByRole('region', { name: '最新安裝紀錄' })
+    expect(within(latest).getAllByRole('link').filter((a) => a.getAttribute('href')?.includes('/installs/')).length).toBe(8)
+    expect(screen.getByRole('link', { name: /案例儲存庫/ }).getAttribute('href')).toBe('/library')
+    expect(screen.getByRole('link', { name: '如何使用' }).getAttribute('href')).toBe('/library?tab=howto')
+    // Explanations and samples moved to 案例儲存庫.
+    expect(screen.queryByLabelText('電費單 4 欄變成健檢報告 3 行結果')).toBeNull()
+    expect(screen.queryByText('真實公開案例：電費與回本換算準不準')).toBeNull()
+    expect(screen.queryByLabelText('平台原則')).toBeNull()
+    expect(screen.queryByText(/每家廠商是一個系列/)).toBeNull()
+  })
+  it('Landing filters collections by equipment category', async () => {
+    renderPage(<Landing />)
+    const chips = await screen.findByRole('group', { name: '依設備類別篩選' })
+    fireEvent.click(within(chips).getByRole('button', { name: /碳盤查輔導/ }))
+    expect(within(chips).getByRole('button', { name: /碳盤查輔導/ }).getAttribute('aria-pressed')).toBe('true')
+    const all = screen.getByRole('region', { name: '全部廠商系列' })
+    const names = within(all).getAllByRole('link').map((a) => a.textContent ?? '')
+    expect(names.some((n) => n.includes('永續通碳盤查顧問'))).toBe(true)
+    expect(names.some((n) => n.includes('亮點 LED'))).toBe(false)
   })
   it('Register asks for a role first', async () => {
     renderPage(<Register />, { path: '/register' })
@@ -236,16 +260,68 @@ describe('market pages with seed data', () => {
     expect(await screen.findByText('廠商介紹')).toBeTruthy()
     expect(screen.getByText('可協助申請補助')).toBeTruthy()
     expect(screen.getByText(/與貴廠同業：金屬加工/)).toBeTruthy()
-    expect(screen.getByText('曾合作產業：')).toBeTruthy()
+    const gallery = screen.getByRole('region', { name: '安裝紀錄' })
+    const items = installLinks(gallery)
+    expect(items.length).toBeGreaterThanOrEqual(5)
+    expect(items.every((a) => a.getAttribute('href')?.startsWith('/vendors/v01/installs/'))).toBe(true)
+    fireEvent.click(screen.getByRole('tab', { name: /關於廠商/ }))
+    expect(await screen.findByText('服務項目')).toBeTruthy()
+  })
+  it('Landing search narrows vendors by install text and offers a way back', async () => {
+    renderPage(<Landing />)
+    const box = await screen.findByRole('searchbox', { name: '搜尋廠商、設備或產業' })
+    fireEvent.change(box, { target: { value: '鍋爐' } })
+    fireEvent.click(screen.getByRole('button', { name: '搜尋廠商' }))
+    const all = await screen.findByRole('region', { name: '全部廠商系列' })
+    const names = within(all).getAllByRole('link').map((a) => a.textContent ?? '')
+    expect(names.some((n) => n.includes('熱力循環工程'))).toBe(true)
+    expect(names.some((n) => n.includes('亮點 LED'))).toBe(false)
+    fireEvent.change(box, { target: { value: '完全不存在的關鍵字' } })
+    fireEvent.click(screen.getByRole('button', { name: '搜尋廠商' }))
+    expect(await screen.findByText('找不到符合的廠商')).toBeTruthy()
+    fireEvent.click(screen.getAllByRole('button', { name: '清除篩選' })[0])
+    expect(await screen.findByRole('region', { name: '全部廠商系列' })).toBeTruthy()
+  })
+  it('VendorProfile filters installs by equipment', async () => {
+    renderPage(<VendorProfile />, { path: '/vendors/:id', url: '/vendors/v01' })
+    const gallery = await screen.findByRole('region', { name: '安裝紀錄' })
+    const total = installLinks(gallery).length
+    fireEvent.click(within(gallery).getByRole('button', { name: /能源管理系統/ }))
+    const filtered = installLinks(gallery)
+    expect(filtered.length).toBeLessThan(total)
+    expect(filtered.every((a) => a.textContent?.includes('能源管理系統'))).toBe(true)
+  })
+  it('InstallDetail shows the process fingerprint, traits with shares, and all 8 stages', async () => {
+    renderPage(<InstallDetail />, { path: '/vendors/:id/installs/:installId', url: '/vendors/v01/installs/v01-1' })
+    expect(await screen.findByRole('heading', { level: 1, name: '鋼鐵加工廠空壓系統整合' })).toBeTruthy()
+    expect(screen.getByRole('img', { name: /8 階段流程圖/ })).toBeTruthy()
+    const traits = screen.getByRole('region', { name: '流程特徵' })
+    expect(within(traits).getAllByText(/% 有此特徵/).length).toBe(9)
+    const flow = screen.getByRole('region', { name: '安裝流程' })
+    expect(within(flow).getAllByRole('listitem').length).toBe(8)
+    expect(screen.getByRole('region', { name: '同廠商其他安裝' })).toBeTruthy()
+  })
+  it('CaseLibrary opens on 如何使用, then keeps the bill sample, stages and demo walkthrough', async () => {
+    renderPage(<CaseLibrary />, { path: '/library' })
+    expect(await screen.findByRole('heading', { level: 1, name: '案例儲存庫' })).toBeTruthy()
+    expect(screen.getByRole('tab', { name: '如何使用' }).getAttribute('aria-selected')).toBe('true')
+    expect(screen.getByText('看節能廠商做過的每一件案子')).toBeTruthy()
+    expect(screen.getByRole('img', { name: '封面示意圖' })).toBeTruthy()
+    expect(within(screen.getByRole('region', { name: '平台原則' })).getAllByRole('listitem')).toHaveLength(3)
+    fireEvent.click(screen.getByRole('tab', { name: '電費單健檢範例' }))
+    expect(await screen.findByLabelText('電費單 4 欄變成健檢報告 3 行結果')).toBeTruthy()
+    expect(screen.getByText(/NT\$ 19,006/)).toBeTruthy()
+    expect(screen.getByText(/447\.4 tCO2e/)).toBeTruthy()
+    expect(screen.getByText(/能源署 114 年 0\.466 係數/)).toBeTruthy()
+    fireEvent.click(screen.getByRole('tab', { name: '8 階段流程' }))
+    expect(await screen.findByText('每個案件走 8 個標準階段')).toBeTruthy()
+    fireEvent.click(screen.getByRole('tab', { name: '示範體驗' }))
+    expect(await screen.findByText(/送出需求就幫你比對 7 項製造業政府補助/)).toBeTruthy()
+    expect(screen.getByText(/12–43 萬/)).toBeTruthy()
   })
   it('FactoryProfile renders f01', async () => {
     renderPage(<FactoryProfile />, { path: '/factories/:id', url: '/factories/f01' })
     expect(await screen.findByText('工廠介紹')).toBeTruthy()
-  })
-  it('Landing highlights matched government subsidies', async () => {
-    renderPage(<Landing />, { path: '/' })
-    expect(await screen.findByText('送出需求就幫你比對 7 項製造業政府補助')).toBeTruthy()
-    expect(screen.getByText(/12–43 萬/)).toBeTruthy()
   })
   it('Feedback page renders rubric items with unselected defaults, NPS, and prefilled mailto link after selection', async () => {
     renderPage(<Feedback />, { path: '/feedback', companyId: 'f01' })
@@ -289,7 +365,12 @@ describe('market pages with seed data', () => {
 describe('market pages with an empty store', () => {
   it('Landing still renders', async () => {
     renderPage(<Landing />, { data: {} })
-    expect(await screen.findByRole('heading', { level: 1, name: /免費電費與節能健檢/ })).toBeTruthy()
+    expect(await screen.findByRole('heading', { level: 1, name: '找節能廠商' })).toBeTruthy()
+    expect(await screen.findByText('名錄裡還沒有節能廠商')).toBeTruthy()
+  })
+  it('InstallDetail shows not-found', async () => {
+    renderPage(<InstallDetail />, { path: '/vendors/:id/installs/:installId', url: '/vendors/v01/installs/zz' })
+    expect(await screen.findByText('這件安裝紀錄不存在或已被移除')).toBeTruthy()
   })
   it('NeedsBoard shows the empty state', async () => {
     renderPage(<NeedsBoard />, { path: '/needs', data: {} })
@@ -317,10 +398,10 @@ describe('market pages with an empty store', () => {
   })
   it('Landing shows personal workspace summary when signed in', async () => {
     renderPage(<Landing />, { path: '/', companyId: 'f01' })
-    expect(await screen.findByRole('heading', { level: 1, name: /永豐金屬.*・工作台摘要/ })).toBeTruthy()
-    expect(screen.getByRole('link', { name: '前往我的工作台' })).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: '查看平台介紹與 8 階段說明' }))
-    expect(await screen.findByText('每個案件走 8 個標準階段')).toBeTruthy()
+    const strip = await screen.findByLabelText('專屬工作台摘要')
+    expect(within(strip).getByText(/永豐金屬/)).toBeTruthy()
+    expect(within(strip).getByRole('link', { name: '前往我的工作台' })).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 1, name: '找節能廠商' })).toBeTruthy()
   })
   it('Register quick wizard creates a clean non-demo factory and seeds carbon', async () => {
     const { store } = renderPage(<Register />, { path: '/register', url: '/register?role=factory&mode=quick' })

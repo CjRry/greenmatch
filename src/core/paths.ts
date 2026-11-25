@@ -11,6 +11,10 @@ export const paths = {
   /** Optional initial filter, read by VendorDirectory from ?specialty= */
   vendors: (filter?: { specialty?: Specialty }) => (filter?.specialty ? `/vendors?specialty=${filter.specialty}` : '/vendors'),
   vendor: (id: string) => `/vendors/${encodeURIComponent(id)}`,
+  /** One past install in a vendor's collection. */
+  vendorInstall: (vendorId: string, installId: string) => `/vendors/${encodeURIComponent(vendorId)}/installs/${encodeURIComponent(installId)}`,
+  /** 案例儲存庫: demo walkthroughs, sample bill, public cases, the 8 stages. */
+  library: (tab?: 'howto' | 'bill' | 'public' | 'stages' | 'about' | 'demo') => (tab ? `/library?tab=${tab}` : '/library'),
   factory: (id: string) => `/factories/${encodeURIComponent(id)}`,
   me: (tab?: HubTab) => (tab ? `/me?tab=${encodeURIComponent(tab)}` : '/me'),
   profile: () => '/me/profile',

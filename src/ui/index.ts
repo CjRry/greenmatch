@@ -23,4 +23,5 @@ export {
 } from './PublicCases'
 export { CompressorHonestSection, type CompressorHonestSectionProps } from './CompressorGuide'
 export { PublicVendorCard, SurveyInquiryDialog, StandardQuoteTool, type InquiryFactoryContext } from './VendorToolbox'
+export { FilterChips, InstallCard, ProcessGlyph, SpecialtyIcon, VendorCollectionCard, coverTone } from './Installs'
 export { cx } from './cx'

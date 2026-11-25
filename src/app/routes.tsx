@@ -8,6 +8,8 @@ import NeedsBoard from '../features/market/pages/NeedsBoard'
 import NeedDetail from '../features/market/pages/NeedDetail'
 import VendorDirectory from '../features/market/pages/VendorDirectory'
 import VendorProfile from '../features/market/pages/VendorProfile'
+import InstallDetail from '../features/market/pages/InstallDetail'
+import CaseLibrary from '../features/market/pages/CaseLibrary'
 import FactoryProfile from '../features/market/pages/FactoryProfile'
 import Feedback from '../features/market/pages/Feedback'
 import Hub from '../features/workspace/pages/Hub'
@@ -38,6 +40,8 @@ export const routes: RouteObject[] = [
       { path: '/vendors', element: <VendorDirectory /> },
       { path: '/vendors/new', element: <Navigate to="/register?role=vendor" replace /> },
       { path: '/vendors/:id', element: <VendorProfile /> },
+      { path: '/vendors/:id/installs/:installId', element: <InstallDetail /> },
+      { path: '/library', element: <CaseLibrary /> },
       { path: '/factories/new', element: <Navigate to="/register?role=factory" replace /> },
       { path: '/factories/:id', element: <FactoryProfile /> },
       { path: '/me', element: <Hub /> },

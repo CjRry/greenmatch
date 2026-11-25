@@ -70,7 +70,7 @@ export default function Hub() {
   if (company === undefined || cases === undefined || companies === undefined) {
     return (
       <>
-        <PageHeader title="我的" />
+        <PageHeader title="我的資料" />
         <SkeletonList rows={4} />
       </>
     )
@@ -79,7 +79,7 @@ export default function Hub() {
   if (!company || !role) {
     return (
       <>
-        <PageHeader title="我的" />
+        <PageHeader title="我的資料" />
         <EmptyState
           icon={<LogIn className="size-8" aria-hidden />}
           title="登入後才看得到你的案件"
@@ -197,7 +197,7 @@ function HubBody({
   return (
     <>
       <PageHeader
-        title="我的"
+        title="我的資料"
         description={role === 'factory' ? '追蹤你的需求、案件進度與碳盤查。' : '追蹤被推薦、受邀與承接的案件。'}
         actions={
           role === 'factory' ? (

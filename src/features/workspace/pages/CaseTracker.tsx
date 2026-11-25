@@ -194,7 +194,7 @@ function Tracker({
               {c.isDemo ? <DemoBadge /> : null}
             </span>
           }
-          breadcrumbs={[{ label: '我的', to: paths.me() }, { label: c.title }]}
+          breadcrumbs={[{ label: '我的資料', to: paths.me() }, { label: c.title }]}
           back={{ to: paths.me(), label: '回我的' }}
           description={
             factory ? (

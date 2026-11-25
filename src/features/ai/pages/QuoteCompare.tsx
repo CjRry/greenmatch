@@ -340,7 +340,7 @@ export default function QuoteCompare({ embedded = false }: { embedded?: boolean 
         <PageHeader
           title="報價解說"
           description="把各家報價整理成同一組欄位，方便比較。"
-          breadcrumbs={[{ label: '我的', to: paths.me() }, { label: c.title, to: paths.case(c.id) }, { label: '報價解說' }]}
+          breadcrumbs={[{ label: '我的資料', to: paths.me() }, { label: c.title, to: paths.case(c.id) }, { label: '報價解說' }]}
           back={{ to: paths.case(c.id), label: '回案件進度' }}
         />
       ) : null}

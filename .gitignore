@@ -13,3 +13,4 @@ docs/board/swarm-snapshot.json
 docs/board/watchdog-state.json
 .claude/worktrees/
 .claude/settings.local.json
+release/

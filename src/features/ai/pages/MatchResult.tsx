@@ -186,7 +186,7 @@ export default function MatchResult({ embedded = false }: { embedded?: boolean }
         <PageHeader
           title="推薦廠商"
           description="平台依 5 項條件算出最適合的 2 家，附上理由。"
-          breadcrumbs={[{ label: '我的', to: paths.me() }, { label: c.title, to: paths.case(c.id) }, { label: '推薦廠商' }]}
+          breadcrumbs={[{ label: '我的資料', to: paths.me() }, { label: c.title, to: paths.case(c.id) }, { label: '推薦廠商' }]}
           back={{ to: paths.case(c.id), label: '回案件進度' }}
           actions={
             canInvite ? (

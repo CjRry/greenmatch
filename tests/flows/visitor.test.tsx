@@ -13,7 +13,7 @@ const vendors = (data.companies ?? []).filter((c) => c.role === 'vendor')
 describe('未登入訪客', () => {
   it('首頁顯示主張與主要入口', async () => {
     renderApp(routes, { url: '/', companyId: null })
-    expect(await screen.findByRole('heading', { level: 1, name: /免費電費與節能健檢/ })).toBeTruthy()
+    expect(await screen.findByRole('heading', { level: 1, name: '找節能廠商' })).toBeTruthy()
     expect(within(screen.getByRole('banner')).getAllByRole('link', { name: /試用回饋/ })).toHaveLength(1)
     const guideBar = screen.queryByRole('region', { name: '3 分鐘試用導覽' })
     if (guideBar) expect(within(guideBar).queryByRole('link', { name: /試用回饋/ })).toBeNull()

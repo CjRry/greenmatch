@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { screen, within } from '@testing-library/react'
 import { renderPage } from '../test/renderPage'
 import { PUBLIC_CASES } from '../data/publicCases'
-import Landing from '../features/market/pages/Landing'
+import CaseLibrary from '../features/market/pages/CaseLibrary'
 import PublicCases from './PublicCases'
 import { SimilarCasePayback } from '../ui'
 
@@ -53,9 +53,9 @@ describe('SimilarCasePayback', () => {
   })
 })
 
-describe('Landing public cases', () => {
-  it('shows sourced cases on the first screen, apart from the demo data', async () => {
-    renderPage(<Landing />, { data: {} })
+describe('案例儲存庫 public cases', () => {
+  it('shows sourced cases apart from the demo data', async () => {
+    renderPage(<CaseLibrary />, { path: '/library', url: '/library?tab=public', data: {} })
     const section = await screen.findByRole('region', { name: '公開節能案例' })
     expect(within(section).getByText(`看全部 ${PUBLIC_CASES.length} 筆與回測表`)).toBeTruthy()
     expect(within(section).getAllByRole('link', { name: /114-/ }).length).toBe(3)

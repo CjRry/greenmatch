@@ -181,7 +181,7 @@ export default function QuoteSubmit() {
       <PageHeader
         title={mine ? '更新報價' : '提交報價'}
         description={`${c.title}${factoryName ? `・${factoryName}` : ''}`}
-        breadcrumbs={[{ label: '我的', to: paths.me() }, { label: c.title, to: paths.case(c.id) }, { label: mine ? '更新報價' : '提交報價' }]}
+        breadcrumbs={[{ label: '我的資料', to: paths.me() }, { label: c.title, to: paths.case(c.id) }, { label: mine ? '更新報價' : '提交報價' }]}
         back={{ to: paths.case(c.id), label: '回案件進度' }}
       />
       <QuoteForm caseId={c.id} vendorId={company.id} vendorName={company.name} mine={mine} />
