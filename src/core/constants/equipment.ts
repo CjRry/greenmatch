@@ -79,7 +79,12 @@ export const SPECIALTY_LABEL: Record<Specialty, string> = {
   carbon_consulting: '碳盤查輔導',
 } as Record<Specialty, string>
 
-export const SPECIALTIES: readonly Specialty[] = [...EQUIPS, 'carbon_consulting']
+/**
+ * What a vendor can offer and a need can ask for: equipment only. The platform has no consulting firms;
+ * factories do their own carbon inventory on the carbon page. 'carbon_consulting' stays in the type and
+ * its label only so data saved before this change still renders.
+ */
+export const SPECIALTIES: readonly Specialty[] = [...EQUIPS]
 
 /** Equipment pairs that share know-how; used for the 0.5 「相關經驗」 match. */
 export const RELATED_EQUIP: Partial<Record<Equip, Equip[]>> = {

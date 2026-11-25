@@ -26,7 +26,6 @@ function findHits(text: string): Hit[] {
     for (let i = lower.indexOf(k); i >= 0; i = lower.indexOf(k, i + 1)) candidates.push({ equip, start: i, end: i + kw.length })
   }
   for (const e of EQUIPS) for (const kw of EQUIP_INFO[e].keywords) add(e, kw)
-  for (const kw of CARBON_KEYWORDS) add('carbon_consulting', kw)
   // Longest match wins where keywords overlap (「冷氣機」 over 「冷氣」, 「加熱爐」 over 「加熱」).
   candidates.sort((a, b) => b.end - b.start - (a.end - a.start) || a.start - b.start)
   const taken: Hit[] = []
@@ -221,7 +220,7 @@ export function parseNeed(raw: string): NeedForm {
     if (it.quantity == null) openQuestions.push(`${label}共有幾台（組）？`)
     if (it.ageYears == null) openQuestions.push(`${label}大約用了幾年，或哪一年購置？`)
   }
-  if (!items.length) openQuestions.push('想改善哪一類設備？例如空壓機、空調、照明、鍋爐，或碳盤查輔導。')
+  if (!items.length) openQuestions.push('想改善哪一類設備？例如空壓機、空調、照明、鍋爐。')
   if (items.length && !mainProblems.length) openQuestions.push('目前最困擾的是電費、故障、噪音，還是客戶要求？')
 
   const monthlyElectricBillNtd = parseMonthlyBillNtd(text)
@@ -243,6 +242,15 @@ export function suggestTitle(form: NeedForm): string {
     return it.quantity ? `${label} ${it.quantity} 台` : label
   })
   return `${parts.join('、')}節能改善`
+}
+
+/**
+ * Whether the factory's description talks about a carbon inventory. The platform does not match
+ * consulting firms, so the wizard points these factories to the carbon page instead.
+ */
+export function mentionsCarbonInventory(text: string): boolean {
+  const lower = text.toLowerCase()
+  return CARBON_KEYWORDS.some((kw) => lower.includes(kw.toLowerCase()))
 }
 
 const isStr = (v: unknown): v is string => typeof v === 'string'

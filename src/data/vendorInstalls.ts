@@ -63,12 +63,6 @@ export const EXTRA_INSTALLS: Record<string, InstallSeed[]> = {
     { title: '紡紗廠空壓洩漏檢測', industry: '紡織染整', city: '雲林縣', equip: 'air_compressor', year: 2024, month: 11, savingPct: 9, scale: 'M', surveyVisits: 2, nightWork: true, verify: 'metered', note: '超音波巡檢找到 46 處洩漏點，只修不換機。' },
     { title: '塑膠廠研磨機馬達變頻', industry: '塑膠射出', city: '南投縣', equip: 'motor_vfd', year: 2024, month: 6, savingPct: 14, scale: 'S', downtimeDays: 1, verify: 'bill' },
   ],
-  v05: [
-    { title: '汽車零件廠碳盤查與減碳路徑', industry: '汽機車零件', city: '台南市', equip: 'carbon_consulting', year: 2026, month: 3, savingPct: null, scale: 'M', subsidy: true, verify: 'metered', note: '客戶要求供應鏈揭露，盤查後接續規劃空壓改善。' },
-    { title: '螺絲廠第一次組織型盤查', industry: '金屬加工', city: '高雄市', equip: 'carbon_consulting', year: 2025, month: 9, savingPct: null, scale: 'S', surveyVisits: 2, verify: 'bill' },
-    { title: '食品廠分區電表建置', industry: '食品加工', city: '嘉義縣', equip: 'ems', year: 2025, month: 6, savingPct: 5, scale: 'S', nightWork: true, verify: 'bill' },
-    { title: '機車零件廠產品碳足跡', industry: '汽機車零件', city: '屏東縣', equip: 'carbon_consulting', year: 2024, month: 12, savingPct: null, scale: 'M', subsidy: true, verify: 'metered' },
-  ],
   v06: [
     { title: '金屬加工廠屋頂 299kWp', industry: '金屬加工', city: '高雄市', equip: 'solar_pv', year: 2026, month: 1, savingPct: null, scale: 'M', surveyVisits: 2, nightWork: true, verify: 'metered', note: '屋頂浪板老舊，複勘後先補強再上支架。' },
     { title: '電子廠自發自用 150kWp', industry: '電子零組件', city: '台南市', equip: 'solar_pv', year: 2025, month: 8, savingPct: 12, scale: 'M', nightWork: true, verify: 'metered' },
@@ -91,14 +85,7 @@ export const EXTRA_INSTALLS: Record<string, InstallSeed[]> = {
   v09: [
     { title: '電子廠分區電表與異常告警', industry: '電子零組件', city: '新竹市', equip: 'ems', year: 2026, month: 3, savingPct: 7, scale: 'M', nightWork: true, verify: 'metered' },
     { title: '汽車零件廠空壓馬達變頻', industry: '汽機車零件', city: '桃園市', equip: 'motor_vfd', year: 2025, month: 10, savingPct: 17, scale: 'M', subsidy: true, downtimeDays: 1, verify: 'metered' },
-    { title: '五金廠碳盤查加用電監測', industry: '金屬加工', city: '苗栗縣', equip: 'carbon_consulting', year: 2025, month: 5, savingPct: null, scale: 'S', verify: 'bill' },
     { title: '精密加工廠契約容量最佳化', industry: '金屬加工', city: '台中市', equip: 'ems', year: 2024, month: 7, savingPct: 4, scale: 'S', surveyVisits: 2, nightWork: true, verify: 'bill', note: '原本每年超約 4 次，調整後一年零超約。' },
-  ],
-  v10: [
-    { title: '塑膠射出廠第一次碳盤查', industry: '塑膠射出', city: '彰化縣', equip: 'carbon_consulting', year: 2026, month: 2, savingPct: null, scale: 'S', verify: 'bill' },
-    { title: '五金廠線上輔導碳盤查', industry: '金屬加工', city: '台南市', equip: 'carbon_consulting', year: 2025, month: 10, savingPct: null, scale: 'S', surveyVisits: 2, verify: 'bill', note: '全程線上，只到廠一次確認柴油堆高機與冷媒。' },
-    { title: '機械廠盤查與第三方查證', industry: '機械設備', city: '桃園市', equip: 'carbon_consulting', year: 2025, month: 4, savingPct: null, scale: 'S', subsidy: true, verify: 'metered' },
-    { title: '金屬表面處理廠碳盤查', industry: '金屬加工', city: '雲林縣', equip: 'carbon_consulting', year: 2024, month: 11, savingPct: null, scale: 'S', verify: 'bill' },
   ],
   v11: [
     { title: '射出廠冷氣汰換 8 台', industry: '塑膠射出', city: '台南市', equip: 'hvac', year: 2026, month: 3, savingPct: 26, scale: 'S', nightWork: true, verify: 'bill' },

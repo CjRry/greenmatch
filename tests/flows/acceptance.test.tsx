@@ -6,10 +6,13 @@ import { renderApp } from '../../src/test/renderPage'
 vi.setConfig({ testTimeout: 20_000 })
 
 describe('驗收：市集（CHR-3）', () => {
-  it('?specialty=carbon_consulting 預先篩出碳盤查顧問', async () => {
+  it('平台沒有碳盤查顧問：舊網址 ?specialty=carbon_consulting 不套用篩選，選單也沒有這一項', async () => {
     const { container } = renderApp(routes, { url: '/vendors?specialty=carbon_consulting', companyId: null })
     await screen.findByRole('heading', { name: '廠商名錄' })
-    await waitFor(() => expect((container.querySelector('select') as HTMLSelectElement).value).toBe('carbon_consulting'))
+    const select = container.querySelector('select') as HTMLSelectElement
+    await waitFor(() => expect(select.value).toBe(''))
+    expect([...select.options].some((o) => o.value === 'carbon_consulting')).toBe(false)
+    expect(screen.queryByText(/顧問有限公司/)).toBeNull()
   })
 
   it('廠商身分在需求詳情可看到「我有興趣」，且沒有報價或競標入口', async () => {
@@ -39,7 +42,7 @@ describe('驗收：工作台（CHR-4）', () => {
   })
 
   it('不在邀請名單的廠商看不到報價提交入口', async () => {
-    renderApp(routes, { url: '/cases/c01', companyId: 'v05' })
+    renderApp(routes, { url: '/cases/c01', companyId: 'v03' })
     await screen.findByRole('heading', { level: 1 })
     expect(screen.queryByRole('link', { name: /提交報價|提交我的報價/ })).toBeNull()
   })

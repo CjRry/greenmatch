@@ -36,12 +36,12 @@ describe('needs', () => {
 
 describe('vendors', () => {
   it('filters by specialty and by collaborated industry', () => {
-    const list = filterVendors(vendors, reviews, { ...EMPTY_VENDOR_FILTER, specialty: 'carbon_consulting' })
+    const list = filterVendors(vendors, reviews, { ...EMPTY_VENDOR_FILTER, specialty: 'hvac' })
     expect(list.length).toBeGreaterThan(0)
-    expect(list.every((v) => v.vendor.specialties.includes('carbon_consulting'))).toBe(true)
+    expect(list.every((v) => v.vendor.specialties.includes('hvac'))).toBe(true)
 
     const foodPeers = filterVendors(vendors, reviews, { ...EMPTY_VENDOR_FILTER, industry: '食品加工' })
-    expect(foodPeers.map((v) => v.id)).toEqual(expect.arrayContaining(['v01', 'v02', 'v05', 'v08', 'v11']))
+    expect(foodPeers.map((v) => v.id)).toEqual(expect.arrayContaining(['v01', 'v02', 'v08', 'v11']))
     expect(foodPeers.some((v) => v.id === 'v03')).toBe(false)
   })
 

@@ -16,16 +16,16 @@ import {
   EmptyState,
   FilterChips,
   InstallCard,
-  ProcessGlyph,
   RatingStars,
   SectionTitle,
   Skeleton,
   SpecialtyIcon,
   Tabs,
   VendorCollectionCard,
-  coverTone,
+  VendorEmblem,
   cx,
 } from '../../../ui'
+import { VendorHome } from '../components/VendorHome'
 import { buildCollections, filterCollections, type CollectionSort, type VendorCollection } from '../lib/collections'
 
 const SORT_TABS: { key: CollectionSort; label: string }[] = [
@@ -39,11 +39,20 @@ function isSort(v: string | null): v is CollectionSort {
 }
 
 /**
- * Home, laid out as a marketplace / directory: search first, then categories, featured, ranking,
+ * Home. A signed-in vendor gets their own workspace (their work, needs that fit, their collection);
+ * everyone else gets the vendor market.
+ */
+export default function Landing() {
+  const { company } = useSession()
+  return company?.role === 'vendor' ? <VendorHome vendor={company} /> : <MarketHome />
+}
+
+/**
+ * The market, laid out as a marketplace / directory: search first, then categories, featured, ranking,
  * latest items and every collection. Filters live in the URL so Back and shared links keep them.
  * The walkthroughs and samples live in 案例儲存庫.
  */
-export default function Landing() {
+function MarketHome() {
   const companies = useCollection('companies')
   const reviews = useCollection('reviews')
   const cases = useCollection('cases')
@@ -223,15 +232,7 @@ export default function Landing() {
           </section>
 
           <section className="flex flex-col gap-3" aria-label="最新安裝紀錄">
-            <SectionTitle
-              title="最新安裝紀錄"
-              action={
-                <Link to={paths.library('howto')} className="inline-flex min-h-11 items-center gap-1 text-sm text-muted hover:text-ink hover:underline">
-                  <CircleHelp className="size-4" aria-hidden />
-                  怎麼看封面
-                </Link>
-              }
-            />
+            <SectionTitle title="最新安裝紀錄" />
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {latest.map(({ install, collection }) => (
                 <li key={install.id}>
@@ -246,7 +247,7 @@ export default function Landing() {
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {shown.map((c) => (
                 <li key={c.vendor.id}>
-                  <VendorCollectionCard vendor={c.vendor} installs={c.installs} stats={c.stats} rating={c.rating} />
+                  <VendorCollectionCard vendor={c.vendor} stats={c.stats} rating={c.rating} />
                 </li>
               ))}
             </ul>
@@ -319,7 +320,6 @@ function FeaturedCarousel({ collections }: { collections: VendorCollection[] }) 
   const idx = Math.min(i, collections.length - 1)
   const c = collections[idx]
   if (!c) return null
-  const hero = c.installs[0]
   const go = (d: number) => setI((idx + d + collections.length) % collections.length)
 
   return (
@@ -333,15 +333,8 @@ function FeaturedCarousel({ collections }: { collections: VendorCollection[] }) 
       }}
     >
       <div className="grid md:grid-cols-[1.1fr_1fr]">
-        <Link to={paths.vendor(c.vendor.id)} tabIndex={-1} aria-hidden className="grid h-56 grid-cols-3 grid-rows-2 gap-px bg-line sm:h-72">
-          <div className={cx('col-span-2 row-span-2', hero ? coverTone(hero.equip) : 'bg-sunken')}>
-            {hero ? <ProcessGlyph steps={hero.steps} savingPct={hero.savingPct} className="mx-auto size-full p-4" /> : null}
-          </div>
-          {[1, 2].map((k) => (
-            <div key={k} className={c.installs[k] ? coverTone(c.installs[k].equip) : 'bg-sunken'}>
-              {c.installs[k] ? <ProcessGlyph steps={c.installs[k].steps} savingPct={c.installs[k].savingPct} className="mx-auto size-full p-2" /> : null}
-            </div>
-          ))}
+        <Link to={paths.vendor(c.vendor.id)} tabIndex={-1} aria-hidden className="block h-48 sm:h-72">
+          <VendorEmblem name={c.vendor.name} id={c.vendor.id} size="lg" />
         </Link>
         <div className="flex min-w-0 flex-col gap-4 p-5" aria-live="polite">
           <div className="flex flex-wrap items-center gap-2">

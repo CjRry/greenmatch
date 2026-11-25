@@ -308,7 +308,6 @@ function Dashboard({ factory, inventories, header }: { factory: FactoryDoc; inve
             </Button>
           }
         />
-        <ConsultantLink />
       </>
     )
   }
@@ -401,9 +400,6 @@ function Dashboard({ factory, inventories, header }: { factory: FactoryDoc; inve
       </Button>
       <ButtonLink to={paths.billCheckup()} variant="secondary">
         電費單健檢
-      </ButtonLink>
-      <ButtonLink to={paths.vendors({ specialty: 'carbon_consulting' })} variant="secondary">
-        找碳盤查顧問
       </ButtonLink>
     </>
   )
@@ -877,8 +873,6 @@ function Dashboard({ factory, inventories, header }: { factory: FactoryDoc; inve
                 onUpdateFacts={!readOnly ? handleUpdateFacts : undefined}
               />
             </section>
-
-            <ConsultantLink />
           </>
         ) : null}
       </div>
@@ -886,13 +880,3 @@ function Dashboard({ factory, inventories, header }: { factory: FactoryDoc; inve
   )
 }
 
-function ConsultantLink() {
-  return (
-    <p className="mt-6 text-sm text-muted">
-      不確定怎麼開始？
-      <ButtonLink to={paths.vendors({ specialty: 'carbon_consulting' })} variant="ghost" size="sm" className="ml-1">
-        找碳盤查顧問
-      </ButtonLink>
-    </p>
-  )
-}

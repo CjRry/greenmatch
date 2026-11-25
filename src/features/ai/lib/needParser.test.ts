@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { guardNeedForm, parseAge, parseMonthlyBillNtd, parseNeed, parseRatedKw, suggestTitle } from './needParser'
+import { guardNeedForm, mentionsCarbonInventory, parseAge, parseMonthlyBillNtd, parseNeed, parseRatedKw, suggestTitle } from './needParser'
 
 const DECK = '我們工廠空壓機有 3 台，都用了十幾年，最近電費越來越高，夏天冷氣也很耗電'
 
@@ -35,11 +35,15 @@ describe('parseNeed edge cases', () => {
     const f = parseNeed('空壓機 3 台 冷氣 5 台')
     expect(f.items.map((i) => i.quantity)).toEqual([3, 5])
   })
-  it('maps carbon inventory words to carbon_consulting without quantity', () => {
+  it('does not turn carbon inventory words into a need item (no consultants on the platform)', () => {
     const f = parseNeed('客戶要求我們做 ISO 14064 碳盤查')
-    expect(f.items).toEqual([{ equip: 'carbon_consulting', quantity: null, ageYears: null, ageText: null, note: null }])
-    expect(f.mainProblems).toContain('客戶要求減碳或提供碳排數據')
-    expect(f.directions[0]).toContain('盤查')
+    expect(f.items).toEqual([])
+    expect(mentionsCarbonInventory('客戶要求我們做 ISO 14064 碳盤查')).toBe(true)
+    expect(mentionsCarbonInventory('空壓機用了十幾年')).toBe(false)
+  })
+  it('drops carbon_consulting items that Claude returns anyway', () => {
+    const f = guardNeedForm({ items: [{ equip: 'carbon_consulting' }, { equip: 'hvac', quantity: 2 }], mainProblems: [], directions: [], openQuestions: [] })
+    expect(f?.items.map((i) => i.equip)).toEqual(['hvac'])
   })
   it('does not turn 變頻空壓機 into a motor drive item', () => {
     const f = parseNeed('想換 2 台變頻空壓機')

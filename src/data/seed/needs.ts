@@ -237,22 +237,6 @@ export const needSeeds = [
     createdAt: '2026-11-12 08:30',
   }),
   need({
-    id: 'n12',
-    factoryId: 'f01',
-    city: '台南市',
-    scale: 'M',
-    title: '第一次組織型碳盤查輔導',
-    rawText: '客戶要我們明年交碳盤查資料，公司沒有人做過，不知道從哪裡開始',
-    form: {
-      items: [{ equip: 'carbon_consulting', quantity: null, ageYears: null, ageText: null }],
-      mainProblems: ['客戶要求提供碳盤查資料', '內部沒有負責人力'],
-      directions: ['組織型碳盤查（ISO 14064-1）', '建立每月活動數據紀錄'],
-      openQuestions: ['盤查邊界是否包含倉庫與辦公室？'],
-    },
-    createdAt: '2026-11-12 09:10',
-    timeline: '2027 年 3 月前完成',
-  }),
-  need({
     id: 'n13',
     factoryId: 'f09',
     city: '嘉義縣',

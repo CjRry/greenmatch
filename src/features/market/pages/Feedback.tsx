@@ -60,7 +60,7 @@ export const RUBRIC_ITEMS: readonly RubricItem[] = [
 
 const ROLE_OPTIONS: { value: FeedbackRole; label: string; sub: string }[] = [
   { value: 'factory', label: '工廠', sub: '製造業負責人、廠務、環安衛或採購' },
-  { value: 'vendor', label: '廠商', sub: '節能工程、空壓／空調設備商、ESCO 或顧問' },
+  { value: 'vendor', label: '廠商', sub: '節能工程、空壓／空調設備商或 ESCO' },
   { value: 'other', label: '其他', sub: '學界、公協會、研究人員或一般訪客' },
 ]
 

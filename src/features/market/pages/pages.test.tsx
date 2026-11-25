@@ -16,7 +16,7 @@ import CaseLibrary from './CaseLibrary'
 import FactoryProfile from './FactoryProfile'
 import Feedback, { buildFeedbackMail, computeWeightedScore } from './Feedback'
 
-/** Links to single installs inside a region (skips help links such as 怎麼看封面). */
+/** Links to single installs inside a region (skips any help links). */
 function installLinks(region: HTMLElement): HTMLElement[] {
   return within(region)
     .getAllByRole('link')
@@ -30,7 +30,7 @@ describe('market pages with seed data', () => {
     expect(screen.getByRole('link', { name: '免費做電費單健檢' })).toBeTruthy()
     expect(screen.getByRole('region', { name: '精選廠商' })).toBeTruthy()
     const ranking = screen.getByRole('region', { name: '熱門節能廠商' })
-    expect(within(ranking).getAllByRole('link', { name: /有限公司|工程行/ }).length).toBeGreaterThanOrEqual(10)
+    expect(within(ranking).getAllByRole('link', { name: /有限公司|工程行/ }).length).toBeGreaterThanOrEqual(9)
     const latest = screen.getByRole('region', { name: '最新安裝紀錄' })
     expect(within(latest).getAllByRole('link').filter((a) => a.getAttribute('href')?.includes('/installs/')).length).toBe(8)
     expect(screen.getByRole('link', { name: /案例儲存庫/ }).getAttribute('href')).toBe('/library')
@@ -41,15 +41,30 @@ describe('market pages with seed data', () => {
     expect(screen.queryByLabelText('平台原則')).toBeNull()
     expect(screen.queryByText(/每家廠商是一個系列/)).toBeNull()
   })
+  it('Landing gives a signed-in vendor their own workspace, without other vendors', async () => {
+    renderPage(<Landing />, { companyId: 'v01' })
+    expect(await screen.findByRole('heading', { level: 1, name: '廠商工作台' })).toBeTruthy()
+    for (const name of ['輪到你處理', '適合你的新需求', '我的系列', '成效與評價']) expect(screen.getByRole('region', { name })).toBeTruthy()
+    expect(screen.queryByRole('region', { name: '精選廠商' })).toBeNull()
+    expect(screen.queryByRole('region', { name: '熱門節能廠商' })).toBeNull()
+    expect(screen.queryByRole('search')).toBeNull()
+    expect(screen.queryByText('冷力空調技術有限公司')).toBeNull()
+    const todo = screen.getByRole('region', { name: '輪到你處理' })
+    expect(within(todo).getAllByRole('link').length).toBeGreaterThan(0)
+    expect(within(screen.getByRole('region', { name: '我的系列' })).getByRole('link', { name: '預覽工廠看到的頁面' }).getAttribute('href')).toBe('/vendors/v01')
+    expect(screen.getByText('比較只用匿名中位數，不列出其他廠商。')).toBeTruthy()
+  })
   it('Landing filters collections by equipment category', async () => {
     renderPage(<Landing />)
     const chips = await screen.findByRole('group', { name: '依設備類別篩選' })
-    fireEvent.click(within(chips).getByRole('button', { name: /碳盤查輔導/ }))
-    expect(within(chips).getByRole('button', { name: /碳盤查輔導/ }).getAttribute('aria-pressed')).toBe('true')
+    expect(within(chips).queryByRole('button', { name: /碳盤查/ })).toBeNull()
+    fireEvent.click(within(chips).getByRole('button', { name: /冰水主機/ }))
+    expect(within(chips).getByRole('button', { name: /冰水主機/ }).getAttribute('aria-pressed')).toBe('true')
     const all = screen.getByRole('region', { name: '全部廠商系列' })
     const names = within(all).getAllByRole('link').map((a) => a.textContent ?? '')
-    expect(names.some((n) => n.includes('永續通碳盤查顧問'))).toBe(true)
+    expect(names.some((n) => n.includes('北辰能源技術服務'))).toBe(true)
     expect(names.some((n) => n.includes('亮點 LED'))).toBe(false)
+    expect(names.some((n) => n.includes('顧問'))).toBe(false)
   })
   it('Register asks for a role first', async () => {
     renderPage(<Register />, { path: '/register' })
@@ -291,10 +306,12 @@ describe('market pages with seed data', () => {
     expect(filtered.length).toBeLessThan(total)
     expect(filtered.every((a) => a.textContent?.includes('能源管理系統'))).toBe(true)
   })
-  it('InstallDetail shows the process fingerprint, traits with shares, and all 8 stages', async () => {
+  it('InstallDetail shows the vendor emblem, traits with shares, and all 8 stages', async () => {
     renderPage(<InstallDetail />, { path: '/vendors/:id/installs/:installId', url: '/vendors/v01/installs/v01-1' })
     expect(await screen.findByRole('heading', { level: 1, name: '鋼鐵加工廠空壓系統整合' })).toBeTruthy()
-    expect(screen.getByRole('img', { name: /8 階段流程圖/ })).toBeTruthy()
+    expect(document.querySelectorAll('svg circle[r="46"]')).toHaveLength(0)
+    const gauges = screen.getAllByRole('img', { name: /^節電 \d+%，刻度 0 到 50%$/ })
+    expect(gauges[0].getAttribute('aria-label')).toBe('節電 24%，刻度 0 到 50%')
     const traits = screen.getByRole('region', { name: '流程特徵' })
     expect(within(traits).getAllByText(/% 有此特徵/).length).toBe(9)
     const flow = screen.getByRole('region', { name: '安裝流程' })
@@ -306,7 +323,7 @@ describe('market pages with seed data', () => {
     expect(await screen.findByRole('heading', { level: 1, name: '案例儲存庫' })).toBeTruthy()
     expect(screen.getByRole('tab', { name: '如何使用' }).getAttribute('aria-selected')).toBe('true')
     expect(screen.getByText('看節能廠商做過的每一件案子')).toBeTruthy()
-    expect(screen.getByRole('img', { name: '封面示意圖' })).toBeTruthy()
+    expect(screen.queryByRole('region', { name: '怎麼看封面' })).toBeNull()
     expect(within(screen.getByRole('region', { name: '平台原則' })).getAllByRole('listitem')).toHaveLength(3)
     fireEvent.click(screen.getByRole('tab', { name: '電費單健檢範例' }))
     expect(await screen.findByLabelText('電費單 4 欄變成健檢報告 3 行結果')).toBeTruthy()

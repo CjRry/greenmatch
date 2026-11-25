@@ -15,13 +15,23 @@ function hash(s: string): number {
   return h
 }
 
+/** The two characters a company is shown by: its name without 股份有限公司 and similar suffixes. */
+export function companyMonogram(name: string): string {
+  return name.replace(/(股份)?有限公司|企業社|工業|實業/g, '').slice(0, 2)
+}
+
+/** A company's color family, stable per id: the same one its avatar uses. */
+export function companyToneFamily(id: string): 'navy' | 'brand' {
+  return hash(id) % 2 === 0 ? 'navy' : 'brand'
+}
+
 /** Square monogram from the first two characters of the company name. */
 export function CompanyAvatar({ name, id, size = 'md' }: { name: string; id: string; size?: 'sm' | 'md' | 'lg' }) {
   const tone = AVATAR_TONES[hash(id) % AVATAR_TONES.length]
   const dims = size === 'sm' ? 'size-8 text-xs' : size === 'lg' ? 'size-14 text-lg' : 'size-11 text-sm'
   return (
     <span aria-hidden className={cx('inline-flex shrink-0 items-center justify-center rounded-sm font-bold', tone, dims)}>
-      {name.replace(/(股份)?有限公司|企業社|工業|實業/g, '').slice(0, 2)}
+      {companyMonogram(name)}
     </span>
   )
 }

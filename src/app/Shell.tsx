@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router'
-import { Archive, BookOpen, Building2, ClipboardList, Compass, FilePlus2, FileSpreadsheet, House, Leaf, MessageSquareHeart, MoreHorizontal, ShieldCheck, SlidersHorizontal, UserRound } from 'lucide-react'
+import { Archive, BookOpen, Building2, ClipboardList, Compass, FilePlus2, FileSpreadsheet, House, Leaf, MessageSquareHeart, MoreHorizontal, ShieldCheck, SlidersHorizontal, Store, UserRound } from 'lucide-react'
 import { paths } from '../core/paths'
 import { useSession } from '../core/session'
 import { useCollection } from '../core/store/StoreProvider'
@@ -16,7 +16,7 @@ interface NavItem {
   end?: boolean
 }
 
-function navFor(role: Role | null): { top: NavItem[]; bottom: NavItem[] } {
+function navFor(role: Role | null, companyId: string | null = null): { top: NavItem[]; bottom: NavItem[] } {
   const home: NavItem = { to: paths.home(), label: '首頁', icon: <House className="size-5" aria-hidden />, end: true }
   const vendors: NavItem = { to: paths.vendors(), label: '廠商名錄', icon: <Building2 className="size-5" aria-hidden /> }
   const needs: NavItem = { to: paths.needs(), label: '需求市集', icon: <ClipboardList className="size-5" aria-hidden /> }
@@ -35,7 +35,11 @@ function navFor(role: Role | null): { top: NavItem[]; bottom: NavItem[] } {
     return { top: [me, billCheckup, factoryFacts, newNeed, carbon, vendors], bottom: [home, billCheckup, factoryFacts, newNeed, me] }
   }
   const library: NavItem = { to: paths.library(), label: '案例儲存庫', icon: <Archive className="size-5" aria-hidden />, end: true }
-  if (role === 'vendor') return { top: [me, needs, vendors, library], bottom: [home, needs, vendors, me, feedback] }
+  if (role === 'vendor') {
+    // A vendor's job here is their own cases and needs that fit; other vendors are not on their menu.
+    const series: NavItem = { to: paths.vendor(companyId ?? ''), label: '我的系列', icon: <Store className="size-5" aria-hidden /> }
+    return { top: [me, needs, series, library], bottom: [home, needs, series, me, feedback] }
+  }
   const billCheckup: NavItem = { to: paths.billCheckup(), label: '電費單健檢', icon: <FileSpreadsheet className="size-5" aria-hidden />, end: true }
   const about: NavItem = { to: paths.about(), label: '關於我們', icon: <ShieldCheck className="size-5" aria-hidden />, end: true }
   return { top: [billCheckup, library, vendors, needs, about], bottom: [home, billCheckup, library, vendors] }
@@ -202,7 +206,7 @@ function TrialGuideBar({ role, isDemo }: { role: Role | null; isDemo: boolean })
 
 export function Shell() {
   const { role, company } = useSession()
-  const nav = navFor(role)
+  const nav = navFor(role, company?.id ?? null)
   const location = useLocation()
   const [moreOpen, setMoreOpen] = useState(false)
 
@@ -280,7 +284,7 @@ export function Shell() {
 
       <footer className="border-t border-line pb-20 md:pb-0 print:hidden">
         <div className="gutter mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 py-5 text-xs text-muted">
-          <span>綠媒 GreenMatch・中小企業節能與顧問工具</span>
+          <span>綠媒 GreenMatch・中小企業節能與碳盤查工具</span>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <Link to={paths.about()} className="hover:text-ink hover:underline">
               關於我們與資料隱私

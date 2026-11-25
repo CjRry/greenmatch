@@ -128,13 +128,16 @@ describe('示範導覽列（OBS-0004 §2-6）', () => {
   it('③ 報價比價與回本 opens the newest case that actually has quotes, not an empty one', async () => {
     const data = fixtureData()
     const quoted = new Set((data.quotes ?? []).map((q) => q.caseId))
+    // A newer f01 case with no quotes yet: the link must skip it.
+    const base = (data.cases ?? []).find((c) => c.factoryId === 'f01')!
+    data.cases = [...(data.cases ?? []), { ...base, id: 'c-noquotes', stage: 'assess', updatedAt: '2099-01-01 00:00' }]
     const f01Cases = (data.cases ?? []).filter((c) => c.factoryId === 'f01').sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
     const expected = f01Cases.find((c) => quoted.has(c.id))?.id ?? 'c01'
     const { router } = renderApp(routes, { url: '/needs', companyId: 'f01', data })
     fireEvent.click(await screen.findByRole('link', { name: '③ 報價比價與回本' }))
     await waitFor(() => expect(router.state.location.pathname).toBe(`/cases/${expected}/quotes`))
     expect(quoted.has(expected)).toBe(true)
-    // The newest demo case (c12) has no quotes; that is what the old link opened.
+    // The newest case has no quotes; that is what the old link opened.
     expect(f01Cases[0].id).not.toBe(expected)
   })
 })

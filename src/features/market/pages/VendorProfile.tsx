@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
-import { Award, CircleHelp, SearchX } from 'lucide-react'
+import { Award, SearchX } from 'lucide-react'
 import { SCALE_SHORT, SPECIALTY_LABEL } from '../../../core/constants/equipment'
 import { sameIndustrySummary } from '../../../core/domain/matching'
 import { formatDate } from '../../../core/format'
@@ -12,13 +12,11 @@ import {
   Badge,
   ButtonLink,
   Card,
-  CompanyAvatar,
   DemoBadge,
   EmptyState,
   FilterChips,
   InstallCard,
   PageHeader,
-  ProcessGlyph,
   RatingStars,
   SectionTitle,
   Select,
@@ -26,8 +24,7 @@ import {
   SpecialtyChips,
   Tabs,
   VendorSubsidyBadge,
-  coverTone,
-  cx,
+  VendorEmblem,
 } from '../../../ui'
 import { collectionFor } from '../lib/collections'
 import { groupByRegion, isFactory, isVendor } from '../lib/filters'
@@ -106,19 +103,10 @@ export default function VendorProfile() {
       </nav>
 
       <section className="overflow-hidden rounded-md border border-line bg-surface" aria-label="廠商系列">
-        <div className="grid h-32 grid-cols-4 gap-px bg-line sm:h-44 sm:grid-cols-6">
-          {Array.from({ length: 6 }, (_, k) => (
-            <div key={k} className={cx(installs[k] ? coverTone(installs[k].equip) : 'bg-sunken', k >= 4 && 'hidden sm:block')}>
-              {installs[k] ? <ProcessGlyph steps={installs[k].steps} savingPct={installs[k].savingPct} className="size-full p-2" /> : null}
-            </div>
-          ))}
+        <div className="h-36 sm:h-52">
+          <VendorEmblem name={company.name} id={company.id} size="lg" />
         </div>
         <div className="flex flex-col gap-4 p-4 sm:p-5">
-          <div className="-mt-12 flex items-end gap-3 sm:-mt-14">
-            <span className="rounded-sm border-4 border-surface bg-surface">
-              <CompanyAvatar name={company.name} id={company.id} size="lg" />
-            </span>
-          </div>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
@@ -201,14 +189,10 @@ export default function VendorProfile() {
                   </Select>
                 </label>
               </div>
-              <Link to={paths.library('howto')} className="-my-2 inline-flex min-h-11 w-fit items-center gap-1 text-sm text-muted hover:text-ink hover:underline">
-                <CircleHelp className="size-4" aria-hidden />
-                怎麼看封面
-              </Link>
               <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                 {visible.map((i) => (
                   <li key={i.id}>
-                    <InstallCard install={i} isDemo={company.isDemo} />
+                    <InstallCard install={i} vendorName={company.name} isDemo={company.isDemo} />
                   </li>
                 ))}
               </ul>

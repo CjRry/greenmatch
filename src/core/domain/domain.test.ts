@@ -62,13 +62,9 @@ describe('rankVendors', () => {
     }
   })
 
-  it('only recommends carbon consultants for a carbon-inventory need', () => {
-    const need = needs.find((n) => n.id === 'n12')!
-    const recs = rankVendors(need, factory('f01'), companies, reviews)
-    for (const r of recs) {
-      const v = companies.find((c) => c.id === r.vendorId)!
-      expect(v.role === 'vendor' && v.vendor.specialties.includes('carbon_consulting')).toBe(true)
-    }
+  it('has no carbon consultants and no carbon-consulting needs to match', () => {
+    for (const c of companies) if (c.role === 'vendor') expect(c.vendor.specialties, c.id).not.toContain('carbon_consulting')
+    for (const n of needs) expect(n.form.items.map((i) => i.equip), n.id).not.toContain('carbon_consulting')
   })
 
   it('is deterministic and respects custom weights', () => {

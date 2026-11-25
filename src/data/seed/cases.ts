@@ -190,7 +190,6 @@ const SEEDS: CaseSeed[] = [
   { id: 'c09', needId: 'n09', stage: 'assess', done: { register: '2026-11-11 13:20' } },
   { id: 'c10', needId: 'n10', stage: 'assess', done: { register: '2026-11-11 16:50' } },
   { id: 'c11', needId: 'n11', stage: 'assess', done: { register: '2026-11-12 08:30' } },
-  { id: 'c12', needId: 'n12', stage: 'assess', done: { register: '2026-11-12 09:10' } },
 ]
 
 /** The two hand-written quotes for c01, in the different formats the deck describes. */

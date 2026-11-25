@@ -12,7 +12,7 @@ import { useCollection, useStore, useStoreInfo } from '../../../core/store/Store
 import { hpToKw, matchSubsidies } from '../../../core/subsidies'
 import type { Equip, EquipmentItem, NeedForm, NeedItem, Source, Specialty } from '../../../core/types'
 import { Badge, Button, ButtonLink, Card, EmptyState, Field, PageHeader, Select, SectionTitle, SkeletonList, SourceTag, SubsidySummaryBar, TextArea, TextInput, useToast } from '../../../ui'
-import { guardNeedForm, parseNeed, suggestTitle } from '../lib/needParser'
+import { guardNeedForm, mentionsCarbonInventory, parseNeed, suggestTitle } from '../lib/needParser'
 import { needPrompt } from '../lib/prompts'
 
 const HP_PRESETS = [
@@ -406,6 +406,15 @@ export default function NeedWizard() {
               </Button>
             ) : null}
           </div>
+
+          {mentionsCarbonInventory(text) ? (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-line bg-navy-soft px-4 py-3 text-sm text-navy">
+              <p>平台不媒合碳盤查顧問。碳盤查請到碳盤查頁，用表單自行填報每月用電與燃料。</p>
+              <ButtonLink to={paths.carbon()} variant="navy" size="sm">
+                前往碳盤查表單
+              </ButtonLink>
+            </div>
+          ) : null}
 
           <Card className="flex flex-col gap-3">
             <SectionTitle title="標準需求表" hint="設備、數量、每台功率（支援 kW 或馬力 HP 換算）與年份皆可直接修改。" />

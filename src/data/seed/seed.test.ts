@@ -10,7 +10,7 @@ describe('demo seed', () => {
   it('has the agreed volume', () => {
     const companies = seed.companies as Company[]
     expect(companies.filter((c) => c.role === 'factory').length).toBeGreaterThanOrEqual(12)
-    expect(companies.filter((c) => c.role === 'vendor').length).toBeGreaterThanOrEqual(10)
+    expect(companies.filter((c) => c.role === 'vendor').length).toBeGreaterThanOrEqual(9)
     expect(seed.reviews!.length).toBeGreaterThanOrEqual(20)
     expect(new Set(seed.carbon!.map((c) => c.factoryId)).size).toBeGreaterThanOrEqual(4)
   })

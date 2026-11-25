@@ -15,17 +15,16 @@ import {
   EmptyState,
   InstallCard,
   PageHeader,
-  ProcessGlyph,
+  SavingGauge,
   SectionTitle,
   SkeletonList,
   SpecialtyIcon,
-  coverTone,
+  VendorEmblem,
   cx,
 } from '../../../ui'
 import { collectionFor } from '../lib/collections'
 import { isFactory, isVendor } from '../lib/filters'
 
-const STAGE_COLORS = ['bg-chart-1', 'bg-chart-2', 'bg-chart-3', 'bg-chart-4', 'bg-chart-5']
 const STAGE_BORDERS = ['border-chart-1', 'border-chart-2', 'border-chart-3', 'border-chart-4', 'border-chart-5']
 
 /** One past install, like an item page: the process fingerprint, its traits, and the 8 stages. */
@@ -73,23 +72,13 @@ export default function InstallDetail() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start">
         <div className="flex flex-col gap-3">
-          <div className={cx('relative overflow-hidden rounded-md border border-line', coverTone(install.equip))}>
-            <ProcessGlyph steps={install.steps} savingPct={install.savingPct} numbered className="mx-auto aspect-square w-full max-w-md p-6" title={`${install.title} 的 8 階段流程圖`} />
+          <div className="relative aspect-[4/3] overflow-hidden rounded-md border border-line">
+            <VendorEmblem name={vendor.name} id={vendor.id} size="lg" />
             <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-sm bg-surface px-2 py-1 text-xs font-medium text-ink-soft">
               <SpecialtyIcon equip={install.equip} className="size-3.5" />
               {SPECIALTY_LABEL[install.equip]}
             </span>
           </div>
-          <ol className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4" aria-label="圖例">
-            {install.steps.map((s, i) => (
-              <li key={s.stage} className="flex items-center gap-1.5 text-ink-soft">
-                <span className={cx('size-2.5 shrink-0 rounded-full', STAGE_COLORS[i % STAGE_COLORS.length])} aria-hidden />
-                <span className="truncate">
-                  {s.n}. {s.label}
-                </span>
-              </li>
-            ))}
-          </ol>
         </div>
 
         <div className="flex min-w-0 flex-col gap-5">
@@ -110,6 +99,7 @@ export default function InstallDetail() {
           <Card className="grid grid-cols-3 gap-3">
             <div>
               <p className="text-xs text-muted">節電</p>
+              <SavingGauge pct={install.savingPct} scale className="mt-1 w-full max-w-28" />
               <p className="tabular font-mono text-2xl font-bold text-brand-strong">{install.savingPct != null ? `${install.savingPct}%` : '—'}</p>
               {install.savingPct == null ? <p className="text-xs text-muted">此類案件不計節電率</p> : null}
             </div>
@@ -224,7 +214,7 @@ export default function InstallDetail() {
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {others.map((i) => (
               <li key={i.id}>
-                <InstallCard install={i} isDemo={vendor.isDemo} />
+                <InstallCard install={i} vendorName={vendor.name} isDemo={vendor.isDemo} />
               </li>
             ))}
           </ul>

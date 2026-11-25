@@ -160,8 +160,8 @@ export interface Vendor extends CompanyBase {
 export type Company = Factory | Vendor
 
 /**
- * One line of the standard need form (標準需求表): a piece of equipment, or the service
- * 'carbon_consulting' (碳盤查輔導) with quantity and age left null.
+ * One line of the standard need form (標準需求表): a piece of equipment. 'carbon_consulting' only
+ * appears in needs saved before the platform dropped consulting firms; new needs never use it.
  */
 export interface NeedItem {
   equip: Specialty

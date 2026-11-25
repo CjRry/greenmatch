@@ -1,15 +1,15 @@
 /**
  * Collection-style widgets (OpenSea-like): a vendor is a collection, each past install is an item
- * with its own process "fingerprint" drawn from how long each of the 8 stages took.
+ * under the vendor's emblem.
  */
 import { Link } from 'react-router'
 import { AirVent, Cog, Fan, Flame, Gauge, Leaf, Lightbulb, Snowflake, Sun, Thermometer, Wind, type LucideIcon } from 'lucide-react'
 import { SPECIALTY_LABEL } from '../core/constants/equipment'
-import type { CollectionStats, InstallStep, VendorInstall } from '../core/domain/installs'
+import type { CollectionStats, VendorInstall } from '../core/domain/installs'
 import { paths } from '../core/paths'
 import type { Specialty, Vendor } from '../core/types'
 import { DemoBadge } from './Badge'
-import { CompanyAvatar, RatingStars } from './Domain'
+import { RatingStars, companyMonogram, companyToneFamily } from './Domain'
 import { cx } from './cx'
 
 const SPECIALTY_ICON: Record<Specialty, LucideIcon> = {
@@ -31,87 +31,78 @@ export function SpecialtyIcon({ equip, className }: { equip: Specialty; classNam
   return <Icon className={className} aria-hidden />
 }
 
-const PETAL_COLORS = ['var(--gm-chart-1)', 'var(--gm-chart-2)', 'var(--gm-chart-3)', 'var(--gm-chart-4)', 'var(--gm-chart-5)']
-
 /**
- * The install's process as a flower: 8 petals clockwise from 12 o'clock, one per stage, length by
- * days spent. Petals with something non-standard (subsidy, second survey…) get a dot at the tip.
+ * A vendor's cover: its monogram as a round seal on the vendor's own color, the same on every install
+ * of that vendor so a collection reads as one brand.
  */
-export function ProcessGlyph({
-  steps,
-  savingPct,
+export function VendorEmblem({
+  name,
+  id,
+  size = 'md',
   className,
-  title,
-  numbered = false,
 }: {
-  steps: readonly InstallStep[]
-  /** Drawn as an outer meter arc from 12 o'clock, clockwise. */
-  savingPct?: number | null
+  name: string
+  id: string
+  size?: 'sm' | 'md' | 'lg'
   className?: string
-  title?: string
-  /** Print the stage number at each petal tip, so the stages can be read without the colors. */
-  numbered?: boolean
 }) {
-  // Petals are relative to this install's longest stage, so the shape shows where the time went.
-  const max = Math.max(...steps.map((s) => s.days), 1)
-  const arc = savingPct != null && savingPct > 0 ? Math.min(savingPct, 100) / 100 : 0
-  const R = 46
-  const C = 2 * Math.PI * R
+  const navy = companyToneFamily(id) === 'navy'
+  const seal =
+    size === 'sm' ? 'size-12 text-base ring-4' : size === 'lg' ? 'size-28 text-4xl ring-8 sm:size-36 sm:text-5xl' : 'size-14 text-lg ring-4 sm:size-20 sm:text-2xl sm:ring-[6px]'
   return (
-    <svg viewBox="0 0 100 100" className={cx('block', className)} role={title ? 'img' : undefined} aria-label={title} aria-hidden={title ? undefined : true}>
-      <circle cx="50" cy="50" r={R} fill="none" stroke="var(--gm-line)" strokeWidth="2" />
-      {arc ? (
-        <circle
-          cx="50"
-          cy="50"
-          r={R}
-          fill="none"
-          stroke="var(--gm-brand)"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeDasharray={`${C * arc} ${C}`}
-          transform="rotate(-90 50 50)"
-        />
-      ) : null}
-      <circle cx="50" cy="50" r="24" fill="none" stroke="var(--gm-line)" strokeWidth="0.6" />
-      {steps.map((s, i) => {
-        const a = ((i * 45 - 90) * Math.PI) / 180
-        const r = 11 + 27 * Math.pow(s.days / max, 0.6)
-        const x1 = 50 + Math.cos(a) * 9
-        const y1 = 50 + Math.sin(a) * 9
-        const x2 = 50 + Math.cos(a) * r
-        const y2 = 50 + Math.sin(a) * r
-        const color = PETAL_COLORS[i % PETAL_COLORS.length]
-        return (
-          <g key={s.stage}>
-            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth="7" strokeLinecap="round" opacity="0.9" />
-            {s.extra ? <circle cx={50 + Math.cos(a) * (r + 5.5)} cy={50 + Math.sin(a) * (r + 5.5)} r="2" fill="var(--gm-ink)" /> : null}
-            {numbered ? (
-              <text
-                x={50 + Math.cos(a) * (s.extra ? r + 11 : r + 6.5)}
-                y={50 + Math.sin(a) * (s.extra ? r + 11 : r + 6.5)}
-                textAnchor="middle"
-                dominantBaseline="central"
-                fontSize="4.5"
-                fontWeight="700"
-                fill="var(--gm-ink-soft)"
-              >
-                {s.n}
-              </text>
-            ) : null}
-          </g>
-        )
-      })}
-      <circle cx="50" cy="50" r="6" fill="var(--gm-surface)" stroke="var(--gm-line-strong)" strokeWidth="0.8" />
-    </svg>
+    <div className={cx('flex size-full items-center justify-center', navy ? 'bg-navy-soft' : 'bg-brand-soft', className)}>
+      <span className="rounded-full border border-line-strong p-1.5">
+        <span
+          aria-hidden
+          className={cx(
+            'flex items-center justify-center rounded-full font-display font-extrabold tracking-wide ring-surface/60',
+            navy ? 'bg-navy text-on-navy' : 'bg-brand text-on-brand',
+            seal,
+          )}
+        >
+          {companyMonogram(name)}
+        </span>
+      </span>
+    </div>
   )
 }
 
-/** Cover background by kind of work: electrical, thermal, or management/consulting. */
-export function coverTone(equip: Specialty): string {
-  if (equip === 'chiller' || equip === 'hvac' || equip === 'boiler' || equip === 'heat_pump') return 'bg-navy-soft'
-  if (equip === 'ems' || equip === 'carbon_consulting' || equip === 'solar_pv') return 'bg-warn-soft'
-  return 'bg-brand-soft'
+/** Top of the saving gauge scale: real installs rarely save more than half, so 50% fills the dial. */
+export const SAVING_GAUGE_MAX = 50
+
+/** Needle angle for a saving percentage: 0 at the left end of the dial, 1 at the right; null when not measured. */
+export function savingGaugeRatio(pct: number | null | undefined): number | null {
+  if (pct == null || !Number.isFinite(pct)) return null
+  return Math.max(0, Math.min(pct, SAVING_GAUGE_MAX)) / SAVING_GAUGE_MAX
+}
+
+/**
+ * The install's saving as an energy-meter dial: a half circle from 0 to 50%, filled in brand green up
+ * to the value, with a needle. Installs without a saving rate (carbon inventory and the like) show an
+ * empty dial with no needle.
+ */
+export function SavingGauge({ pct, className, scale = false }: { pct: number | null | undefined; className?: string; scale?: boolean }) {
+  const r = savingGaugeRatio(pct)
+  const a = Math.PI * (1 - (r ?? 0))
+  const nx = 50 + 31 * Math.cos(a)
+  const ny = 52 - 31 * Math.sin(a)
+  const arc = 'M 10 52 A 40 40 0 0 1 90 52'
+  return (
+    <svg viewBox={scale ? '0 0 100 66' : '0 0 100 58'} role="img" aria-label={r == null ? '不計節電率' : `節電 ${pct}%，刻度 0 到 ${SAVING_GAUGE_MAX}%`} className={className}>
+      <path d={arc} fill="none" stroke="var(--gm-line)" strokeWidth="9" strokeLinecap="round" />
+      {r != null && r > 0 ? (
+        <path d={arc} fill="none" stroke="var(--gm-brand)" strokeWidth="9" strokeLinecap="round" pathLength={100} strokeDasharray={`${r * 100} 100`} />
+      ) : null}
+      {r != null ? <line x1="50" y1="52" x2={nx} y2={ny} stroke="var(--gm-ink)" strokeWidth="3" strokeLinecap="round" /> : null}
+      <circle cx="50" cy="52" r="4.5" fill={r != null ? 'var(--gm-ink)' : 'var(--gm-line-strong)'} />
+      {scale ? (
+        <>
+          <text x="10" y="65" textAnchor="middle" fontSize="8" fill="var(--gm-muted)">0</text>
+          <text x="90" y="65" textAnchor="middle" fontSize="8" fill="var(--gm-muted)">{SAVING_GAUGE_MAX}%</text>
+        </>
+      ) : null}
+    </svg>
+  )
 }
 
 /** A whole-card link: soft lift and shadow on hover (200 ms, transform only), pressed state, visible focus. */
@@ -161,11 +152,11 @@ export function FilterChips<K extends string>({
 }
 
 /** One install as a gallery item. */
-export function InstallCard({ install, vendorName, isDemo }: { install: VendorInstall; vendorName?: string; isDemo?: boolean }) {
+export function InstallCard({ install, vendorName, isDemo }: { install: VendorInstall; vendorName: string; isDemo?: boolean }) {
   return (
     <Link to={paths.vendorInstall(install.vendorId, install.id)} className={INTERACTIVE_CARD}>
-      <div className={cx('relative aspect-square', coverTone(install.equip))}>
-        <ProcessGlyph steps={install.steps} savingPct={install.savingPct} className="size-full p-3" />
+      <div className="relative aspect-[4/3]">
+        <VendorEmblem name={vendorName} id={install.vendorId} />
         <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-sm bg-surface/90 px-1.5 py-0.5 text-xs font-medium text-ink-soft">
           <SpecialtyIcon equip={install.equip} className="size-3.5" />
           {SPECIALTY_LABEL[install.equip]}
@@ -173,12 +164,15 @@ export function InstallCard({ install, vendorName, isDemo }: { install: VendorIn
         {isDemo ? <DemoBadge className="absolute top-2 right-2 bg-surface/90" /> : null}
       </div>
       <div className="flex flex-1 flex-col gap-1 p-3">
-        {vendorName ? <span className="truncate text-xs text-muted">{vendorName}</span> : null}
+        <span className="truncate text-xs text-muted">{vendorName}</span>
         <span className="line-clamp-2 text-sm font-bold text-ink group-hover:text-brand-strong">{install.title}</span>
         <div className="mt-auto flex items-end justify-between gap-2 pt-2">
-          <div className="flex flex-col">
-            <span className="text-xs text-muted">節電</span>
-            <span className="tabular font-mono text-sm font-semibold text-brand-strong">{install.savingPct != null ? `${install.savingPct}%` : '—'}</span>
+          <div className="flex items-end gap-1.5">
+            <SavingGauge pct={install.savingPct} className="w-12 shrink-0" />
+            <div className="flex flex-col">
+              <span className="text-xs text-muted">節電</span>
+              <span className="tabular font-mono text-sm font-semibold text-brand-strong">{install.savingPct != null ? `${install.savingPct}%` : '—'}</span>
+            </div>
           </div>
           <div className="flex flex-col items-end">
             <span className="text-xs text-muted">總工期</span>
@@ -190,39 +184,23 @@ export function InstallCard({ install, vendorName, isDemo }: { install: VendorIn
   )
 }
 
-/** A vendor as a collection card: a mosaic of its latest installs, then name and stats. */
+/** A vendor as a collection card: its emblem, then name and stats. */
 export function VendorCollectionCard({
   vendor,
-  installs,
   stats,
   rating,
 }: {
   vendor: Vendor
-  installs: readonly VendorInstall[]
   stats: CollectionStats
   rating: { avg: number | null; count: number }
 }) {
-  const mosaic = installs.slice(0, 3)
   return (
     <Link to={paths.vendor(vendor.id)} className={INTERACTIVE_CARD}>
-      <div className="grid h-28 grid-cols-3 gap-px bg-line">
-        {[0, 1, 2].map((i) =>
-          mosaic[i] ? (
-            <div key={i} className={coverTone(mosaic[i].equip)}>
-              <ProcessGlyph steps={mosaic[i].steps} savingPct={mosaic[i].savingPct} className="size-full p-1.5" />
-            </div>
-          ) : (
-            <div key={i} className="bg-sunken" />
-          ),
-        )}
+      <div className="relative h-28">
+        <VendorEmblem name={vendor.name} id={vendor.id} size="sm" />
+        {vendor.isDemo ? <DemoBadge className="absolute top-2 right-2 bg-surface/90" /> : null}
       </div>
       <div className="flex flex-1 flex-col gap-3 p-3">
-        <div className="-mt-8 flex items-end gap-2">
-          <span className="rounded-sm border-2 border-surface">
-            <CompanyAvatar name={vendor.name} id={vendor.id} />
-          </span>
-          {vendor.isDemo ? <DemoBadge className="mb-0.5 bg-surface" /> : null}
-        </div>
         <div className="min-w-0">
           <p className="font-display font-bold text-ink [overflow-wrap:anywhere] group-hover:text-brand-strong">{vendor.name}</p>
           <p className="mt-0.5 line-clamp-1 text-xs text-muted">{vendor.vendor.tagline}</p>
@@ -234,7 +212,10 @@ export function VendorCollectionCard({
           </div>
           <div>
             <dt className="text-xs text-muted">平均節電</dt>
-            <dd className="tabular font-mono text-sm font-semibold text-brand-strong">{stats.avgSavingPct != null ? `${stats.avgSavingPct}%` : '—'}</dd>
+            <dd className="flex items-end gap-1">
+              <SavingGauge pct={stats.avgSavingPct} className="w-8 shrink-0" />
+              <span className="tabular font-mono text-sm font-semibold text-brand-strong">{stats.avgSavingPct != null ? `${stats.avgSavingPct}%` : '—'}</span>
+            </dd>
           </div>
           <div>
             <dt className="text-xs text-muted">評價</dt>

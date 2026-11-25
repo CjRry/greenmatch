@@ -3,7 +3,6 @@ import { Link, useNavigate, useSearchParams } from 'react-router'
 import { ArrowRight, Eye, FileSpreadsheet, LayoutList, Layers, ShieldCheck, Tag, Timer } from 'lucide-react'
 import { ETA_NOTE, STAGES } from '../../../core/constants/stages'
 import { analyzeBillCheckup } from '../../../core/domain/billCheckup'
-import type { InstallStep } from '../../../core/domain/installs'
 import { summarizeBacktest } from '../../../core/domain/publicCaseBacktest'
 import { formatNtd, formatNumber, formatTons } from '../../../core/format'
 import { paths } from '../../../core/paths'
@@ -17,7 +16,6 @@ import {
   Card,
   DemoBadge,
   PageHeader,
-  ProcessGlyph,
   PUBLIC_CASE_DISCLAIMER,
   PublicCaseBadge,
   PublicCaseCard,
@@ -93,16 +91,6 @@ export default function CaseLibrary() {
   )
 }
 
-/** A made-up install, only to explain how to read a cover. */
-const SAMPLE_STEPS: InstallStep[] = STAGES.map((s) => ({
-  stage: s.key,
-  n: s.n,
-  label: s.label,
-  days: ({ register: 1, assess: 2, survey: 12, quote: 8, contract: 21, construction: 4, acceptance: 3, compare: 30 } as const)[s.key],
-  note: '',
-  extra: s.key === 'survey' || s.key === 'contract' ? '示意' : undefined,
-}))
-
 const PRINCIPLES = [
   { icon: Layers, title: '每件案子都走同樣 8 個階段', body: '從需求登記到用電比對，各廠商的每件安裝都用同一把尺記錄，做法不同的地方逐項標出。' },
   { icon: ShieldCheck, title: '每案只推薦 2 家並附理由', body: '工廠登記需求後，平台依專長、距離、實績、評價與規模推薦 2 家，不開放十幾家殺價競標。' },
@@ -136,29 +124,6 @@ function HowTo() {
             </li>
           ))}
         </ol>
-      </section>
-
-      <section className="flex flex-col gap-3" aria-label="怎麼看封面">
-        <SectionTitle title="怎麼看安裝紀錄的封面" />
-        <div className="grid items-center gap-6 md:grid-cols-[16rem_1fr]">
-          <div className="mx-auto w-full max-w-64 rounded-md border border-line bg-brand-soft">
-            <ProcessGlyph steps={SAMPLE_STEPS} savingPct={24} numbered className="aspect-square w-full p-4" title="封面示意圖" />
-          </div>
-          <ul className="flex flex-col gap-3 text-sm text-ink-soft">
-            <li>
-              <span className="font-medium text-ink">8 片花瓣＝8 個階段。</span>從 12 點鐘方向順時針是 1 需求登記到 8 用電比對，花瓣越長，那個階段花的天數越多。
-            </li>
-            <li>
-              <span className="font-medium text-ink">黑點＝做法與標準不同。</span>例如多一次複勘、先申請補助再簽約、夜間施工。點進單件頁會寫出是哪裡不同。
-            </li>
-            <li>
-              <span className="font-medium text-ink">外圈綠弧＝節電率。</span>繞一整圈是 100%；碳盤查等不計節電率的案子沒有綠弧。
-            </li>
-            <li>
-              <span className="font-medium text-ink">底色＝工程類別。</span>綠底是電力設備（空壓、馬達、照明、泵浦），藍底是冷熱設備（空調、冰水、鍋爐、熱泵），黃底是管理與顧問（能源管理、太陽能、碳盤查）。
-            </li>
-          </ul>
-        </div>
       </section>
 
       <section className="flex flex-col gap-3" aria-label="平台原則">
