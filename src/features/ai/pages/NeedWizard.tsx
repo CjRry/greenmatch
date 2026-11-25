@@ -9,8 +9,8 @@ import { nowIso } from '../../../core/format'
 import { paths } from '../../../core/paths'
 import { useSession } from '../../../core/session'
 import { useCollection, useStore, useStoreInfo } from '../../../core/store/StoreProvider'
-import { hpToKw, matchSubsidies } from '../../../core/subsidies'
-import type { Equip, EquipmentItem, NeedForm, NeedItem, Source, Specialty } from '../../../core/types'
+import { POWER_SUBTYPES, POWER_SUBTYPE_LABEL, hpToKw, matchSubsidies } from '../../../core/subsidies'
+import type { Equip, EquipmentItem, NeedForm, NeedItem, PowerSubtype, Source, Specialty } from '../../../core/types'
 import { Badge, Button, ButtonLink, Card, EmptyState, Field, PageHeader, Select, SectionTitle, SkeletonList, SourceTag, SubsidySummaryBar, TextArea, TextInput, useToast } from '../../../ui'
 import { guardNeedForm, mentionsCarbonInventory, parseNeed, suggestTitle } from '../lib/needParser'
 import { needPrompt } from '../lib/prompts'
@@ -424,7 +424,7 @@ export default function NeedWizard() {
                   <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-[1.3fr_0.6fr_1.1fr_1fr_1.2fr_auto] sm:items-end">
                     <div className="col-span-2 sm:col-span-1">
                       <label className="mb-1 block text-xs font-medium text-muted">設備／服務</label>
-                      <Select aria-label={`第 ${i + 1} 列設備`} value={it.equip} onChange={(e) => patchItem(i, { equip: e.target.value as Specialty })}>
+                      <Select aria-label={`第 ${i + 1} 列設備`} value={it.equip} onChange={(e) => patchItem(i, { equip: e.target.value as Specialty, subtype: null })}>
                         {SPECIALTIES.map((s) => (
                           <option key={s} value={s}>{SPECIALTY_LABEL[s]}</option>
                         ))}
@@ -490,6 +490,25 @@ export default function NeedWizard() {
                     <p className="text-xs text-muted">
                       空壓機風量（m³/min）與實際管壓皆為選填，不知道可先留白、不卡需求送出；待廠商場勘時實測一週再確認。
                     </p>
+                  ) : null}
+                  {POWER_SUBTYPES[it.equip as Equip] ? (
+                    <div className="flex flex-col gap-1 sm:max-w-sm">
+                      <label htmlFor={`need-item-${i}-subtype`} className="text-xs font-medium text-muted">
+                        機種（選填，補助單價依機種不同）
+                      </label>
+                      <Select
+                        id={`need-item-${i}-subtype`}
+                        value={it.subtype ?? ''}
+                        onChange={(e) => patchItem(i, { subtype: (e.target.value || null) as PowerSubtype | null })}
+                      >
+                        <option value="">不確定</option>
+                        {POWER_SUBTYPES[it.equip as Equip]!.map((t) => (
+                          <option key={t} value={t}>
+                            {POWER_SUBTYPE_LABEL[t]}
+                          </option>
+                        ))}
+                      </Select>
+                    </div>
                   ) : null}
                   {it.equip !== 'carbon_consulting' ? (
                     <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
@@ -580,6 +599,7 @@ export default function NeedWizard() {
               {form.items.map((it, i) => (
                 <li key={i}>
                   {SPECIALTY_LABEL[it.equip]}
+                  {it.subtype ? `（${POWER_SUBTYPE_LABEL[it.subtype]}）` : ''}
                   {it.quantity ? ` ${it.quantity} 台` : ''}
                   {it.ratedKw ? `・每台 ${it.ratedKw} kW` : ''}
                   {it.ageText ? `，${it.ageText}` : it.ageYears ? `，${it.ageYears} 年` : ''}

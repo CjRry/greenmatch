@@ -1,6 +1,6 @@
 import { formatEquipmentSummary, overallFactSource, resolveFactoryFacts, type NumericFactoryFactKey } from '../domain/factoryFacts'
 import { formatNtd, formatNtdRange, formatNumber, nowIso } from '../format'
-import type { Equip, FactSourceKind, Factory, FactoryFactKey, Need, QuoteFields, StageKey } from '../types'
+import type { Equip, FactSourceKind, Factory, FactoryFactKey, Need, PowerSubtype, QuoteFields, StageKey } from '../types'
 
 export const SUBSIDY_CHECKED_DATE = '2026/11/13'
 export const SUBSIDY_DISCLAIMER = '估算，以官方公告為準'
@@ -46,7 +46,7 @@ export const SUBSIDIES: readonly SubsidyDef[] = [
     kind: '補助',
     plainDesc: '汰換或新設高效率空壓機、風機、泵浦，按額定功率（kW）直接補助現金，中小企業再乘 1.2 倍。',
     amountRule:
-      '空壓機：固定轉速迴轉式 700–2,500、可變轉速迴轉式 1,200–3,200、活塞式 1,000–1,100 元／kW（3.7–200 kW）；風機 2,000–2,400、泵浦 2,800–4,500 元／kW（0.75–200 kW）；低壓感應電動機 IE4 700 元／kW；中小企業 × 1.2；每年上限 500 萬（年營業額 1 億以上為 1,500 萬）。',
+      '空壓機（依能效等級分兩級）：固定轉速迴轉式 3.7–75 kW 900–2,500、75–200 kW 700–2,400；可變轉速迴轉式 7.5–75 kW 1,500–3,200、75–200 kW 1,200–3,000；活塞式 3.7–75 kW 1,000–1,100 元／kW。風機 2,000–2,400、泵浦單段 2,800–4,000、多段 3,300–4,500 元／kW（0.75–200 kW，依功率級距）。低壓感應電動機 IE4 700 元／kW。中小企業 × 1.2；每年上限 500 萬（年營業額 1 億以上為 1,500 萬）。',
     eligibility:
       '依法登記之法人（另含公法人與核准設立醫療機構）；須為新品並內含 IE3 以上電動機，且已登錄於「動力與公用設備補助產品系統」；同一設備未領取其他政府補助（空壓機 3.7–200 kW、風機／泵浦 0.75–200 kW）。',
     periodText: '115 年購買期間至 2026/12/31，須於 2027/01/15（民國 116/1/15）前送件申請。',
@@ -281,27 +281,98 @@ interface PowerRateTier {
   min: number
   max: number
   tierLabel: string
+  /** The machine type the rate is for; null when the type was not given and the range covers every type. */
+  subtypeLabel: string | null
+}
+
+export const POWER_SUBTYPE_LABEL: Record<PowerSubtype, string> = {
+  compressor_fixed: '固定轉速迴轉式（螺旋）',
+  compressor_vsd: '可變轉速迴轉式（變頻）',
+  compressor_piston: '活塞式',
+  fan: '風機',
+  pump_single: '泵浦・單段（C80）',
+  pump_multi: '泵浦・多段（C40）',
+}
+
+/** Which machine types belong to each subsidised equipment code. */
+export const POWER_SUBTYPES: Partial<Record<Equip, readonly PowerSubtype[]>> = {
+  air_compressor: ['compressor_fixed', 'compressor_vsd', 'compressor_piston'],
+  pump_fan: ['fan', 'pump_single', 'pump_multi'],
+}
+
+interface RateBand {
+  /** Lower bound of the band: inclusive for the first band, exclusive after. */
+  from: number
+  to: number
+  /** 元／kW. Two values when the rate depends on the product's efficiency grade (d 值). */
+  min: number
+  max: number
 }
 
 /**
- * 依《動力與公用設備補助作業要點》（115/01/29 修正版）第三點官方基準表，
- * 按設備類別與單台額定功率（kW）取得官方補助單價區間（元／kW）。
- * 若超出作業要點受理之單台功率範圍則回傳 null。
+ * 《動力與公用設備補助作業要點》（115/01/29 經能字第11558000230號令修正）第三點第三款補助基準表，元／kW。
+ * Compressors have two efficiency grades (d 值) per type; a factory rarely knows the grade, so both
+ * are kept as a min–max range. Variable-speed compressors start at 7.5 kW; piston compressors stop at
+ * 75 kW. 低壓感應電動機 IE4（700 元／kW）is not matched here: a 馬達／變頻 need may be a drive retrofit.
  */
-export function resolvePowerRate(equip: Equip, kw: number): PowerRateTier | null {
-  if (equip === 'air_compressor') {
-    if (kw >= 3.7 && kw <= 75) return { label: '空壓機', min: 900, max: 3200, tierLabel: '3.7–75 kW' }
-    if (kw > 75 && kw <= 200) return { label: '空壓機', min: 700, max: 3000, tierLabel: '>75–200 kW' }
-    return null
+const RATE_TABLE: Record<PowerSubtype, readonly RateBand[]> = {
+  compressor_fixed: [
+    { from: 3.7, to: 75, min: 900, max: 2500 },
+    { from: 75, to: 200, min: 700, max: 2400 },
+  ],
+  compressor_vsd: [
+    { from: 7.5, to: 75, min: 1500, max: 3200 },
+    { from: 75, to: 200, min: 1200, max: 3000 },
+  ],
+  compressor_piston: [{ from: 3.7, to: 75, min: 1000, max: 1100 }],
+  fan: [
+    { from: 0.75, to: 37, min: 2200, max: 2200 },
+    { from: 37, to: 75, min: 2000, max: 2000 },
+    { from: 75, to: 150, min: 2400, max: 2400 },
+    { from: 150, to: 200, min: 2400, max: 2400 },
+  ],
+  pump_single: [
+    { from: 0.75, to: 37, min: 3000, max: 3000 },
+    { from: 37, to: 75, min: 2800, max: 2800 },
+    { from: 75, to: 150, min: 3600, max: 3600 },
+    { from: 150, to: 200, min: 4000, max: 4000 },
+  ],
+  pump_multi: [
+    { from: 0.75, to: 37, min: 3500, max: 3500 },
+    { from: 37, to: 75, min: 3300, max: 3300 },
+    { from: 75, to: 150, min: 4100, max: 4100 },
+    { from: 150, to: 200, min: 4500, max: 4500 },
+  ],
+}
+
+function bandFor(subtype: PowerSubtype, kw: number): RateBand | null {
+  const bands = RATE_TABLE[subtype]
+  return bands.find((b, i) => (i === 0 ? kw >= b.from : kw > b.from) && kw <= b.to) ?? null
+}
+
+const fmtKw = (n: number) => `${n} kW`
+
+/**
+ * 依官方基準表，按設備類別、單台額定功率（kW）與機種取得補助單價區間（元／kW）。
+ * 不知道機種時，取該功率下所有可補助機種的最低到最高單價。
+ * 該機種（或所有機種）在這個功率都不受理時回傳 null。
+ */
+export function resolvePowerRate(equip: Equip, kw: number, subtype?: PowerSubtype | null): PowerRateTier | null {
+  const types = POWER_SUBTYPES[equip]
+  if (!types) return null
+  const label = POWER_LABEL[equip] ?? equip
+  const chosen = subtype && types.includes(subtype) ? [subtype] : types
+  const bands = chosen.map((t) => bandFor(t, kw)).filter((b): b is RateBand => b != null)
+  if (!bands.length) return null
+  const lo = Math.min(...bands.map((b) => b.from))
+  const hi = Math.max(...bands.map((b) => b.to))
+  return {
+    label,
+    min: Math.min(...bands.map((b) => b.min)),
+    max: Math.max(...bands.map((b) => b.max)),
+    tierLabel: `${fmtKw(lo)}–${fmtKw(hi)}`,
+    subtypeLabel: chosen.length === 1 ? POWER_SUBTYPE_LABEL[chosen[0]] : null,
   }
-  if (equip === 'pump_fan') {
-    if (kw >= 0.75 && kw <= 37) return { label: '泵浦／風機', min: 2200, max: 3500, tierLabel: '0.75–37 kW' }
-    if (kw > 37 && kw <= 75) return { label: '泵浦／風機', min: 2000, max: 3300, tierLabel: '>37–75 kW' }
-    if (kw > 75 && kw <= 150) return { label: '泵浦／風機', min: 2400, max: 4100, tierLabel: '>75–150 kW' }
-    if (kw > 150 && kw <= 200) return { label: '泵浦／風機', min: 2400, max: 4500, tierLabel: '>150–200 kW' }
-    return null
-  }
-  return null
 }
 
 const ESPC_PRIORITY_EQUIPS = new Set<Equip>(['air_compressor', 'chiller', 'hvac', 'boiler', 'ems', 'heat_pump'])
@@ -341,7 +412,7 @@ export function matchSubsidies(input: SubsidyMatchInput, today = taipeiToday()):
     ? need.form.items.filter((it) => it.equip === 'air_compressor' || it.equip === 'pump_fan')
     : factoryEquips
         .filter((e) => e.type === 'air_compressor' || e.type === 'pump_fan')
-        .map((e) => ({ equip: e.type, quantity: e.quantity, ratedKw: e.ratedKw ?? null }))
+        .map((e) => ({ equip: e.type, quantity: e.quantity, ratedKw: e.ratedKw ?? null, subtype: null as PowerSubtype | null }))
 
   if (context === 'carbon' || candidateItems.length === 0) {
     items.push({
@@ -377,7 +448,8 @@ export function matchSubsidies(input: SubsidyMatchInput, today = taipeiToday()):
       if (qty == null || qty <= 0) missing.add('設備數量')
       if (kw == null || kw <= 0) missing.add('每台額定功率（kW 或馬力）')
       if (qty != null && qty > 0 && kw != null && kw > 0) {
-        const tier = resolvePowerRate(equip, kw)
+        const subtype = 'subtype' in it ? (it.subtype ?? null) : null
+        const tier = resolvePowerRate(equip, kw, subtype)
         if (!tier) {
           outOfRangeCount++
           continue
@@ -387,7 +459,9 @@ export function matchSubsidies(input: SubsidyMatchInput, today = taipeiToday()):
         minSum += qty * kw * tier.min * mult
         maxSum += qty * kw * tier.max * mult
         const kwSourceNote = it.ratedKw == null && matchFactoryEq?.ratedKw != null ? '（依貴廠檔案登記功率估算）' : ''
-        descParts.push(`${equipLabel} ${qty} 台、各 ${kw} kW${kwSourceNote}`)
+        const typeText = tier.subtypeLabel ? `（${tier.subtypeLabel}，每 kW ${formatNumber(tier.min)}${tier.max !== tier.min ? `–${formatNumber(tier.max)}` : ''} 元）` : '（未指定機種，取各機種單價範圍）'
+        descParts.push(`${equipLabel} ${qty} 台、各 ${kw} kW${typeText}${kwSourceNote}`)
+        if (!tier.subtypeLabel && POWER_SUBTYPES[equip]) missing.add('機種（可縮小補助範圍）')
       }
     }
 
@@ -396,7 +470,8 @@ export function matchSubsidies(input: SubsidyMatchInput, today = taipeiToday()):
         def: powerDef,
         status: 'not_applicable',
         amount: null,
-        reason: '單台額定功率超出 115 年作業要點補助範圍（空壓機 3.7–200 kW、風機／泵浦 0.75–200 kW）。',
+        reason:
+          '單台額定功率或機種不在 115 年作業要點補助範圍內（空壓機 3.7–200 kW，其中變頻式 7.5 kW 起、活塞式只到 75 kW；風機／泵浦 0.75–200 kW）。',
         missingFields: [],
       })
     } else if (completeCount === 0) {
@@ -415,7 +490,7 @@ export function matchSubsidies(input: SubsidyMatchInput, today = taipeiToday()):
       const max = Math.min(cap, roundSubsidy(maxSum))
       const smeText = isSme ? '，中小企業加成 1.2 倍' : ''
       const missText = missing.size ? `（另有項目缺 ${Array.from(missing).join('、')}）` : ''
-      const rangeText = outOfRangeCount > 0 ? '（已排除超出 200 kW 或低於下限機組）' : ''
+      const rangeText = outOfRangeCount > 0 ? '（已排除不在補助功率範圍內的機組）' : ''
       items.push({
         def: powerDef,
         status: 'likely',

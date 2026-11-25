@@ -16,6 +16,7 @@ export function needPrompt(text: string): string {
 - equip 只能使用下列代碼，不在清單內的設備不要列出：
 ${CODE_LIST}
 - 碳盤查、盤查、碳排、ISO 14064 不是設備改善需求，平台不媒合碳盤查顧問：這類內容不要列進 items。
+- subtype 只用於 air_compressor 與 pump_fan，填機種代碼：compressor_fixed（定頻／固定轉速螺旋式）、compressor_vsd（變頻）、compressor_piston（活塞式）、fan（風機）、pump_single（單段泵浦）、pump_multi（多段泵浦）；描述看不出來填 null，不要猜。
 - quantity 是數量（整數）；沒提到填 null。ratedKw 是每台額定功率 kW（數字，若描述寫 50HP 或 50 馬力則換算為 37）；沒提到填 null。ageYears 是使用年數（整數）；「十幾年」填 10；沒提到填 null。ageText 保留工廠原話（例如「10 年以上」），沒有填 null。
 - mainProblems：主要問題的短句（例如「電費上升」），最多 5 項。
 - directions：可能的改善方向短句，最多 5 項。
@@ -23,7 +24,7 @@ ${CODE_LIST}
 - 全部使用繁體中文（台灣用語）。
 
 JSON 格式：
-{"items":[{"equip":"air_compressor","quantity":3,"ageYears":10,"ageText":"10 年以上","note":null}],"mainProblems":["電費上升"],"directions":["空壓機汰換為變頻機種"],"openQuestions":["冷氣有幾台？"]}
+{"items":[{"equip":"air_compressor","subtype":null,"quantity":3,"ageYears":10,"ageText":"10 年以上","note":null}],"mainProblems":["電費上升"],"directions":["空壓機汰換為變頻機種"],"openQuestions":["冷氣有幾台？"]}
 
 範例輸入：我們工廠空壓機有 3 台，都用了十幾年，最近電費越來越高，夏天冷氣也很耗電
 範例輸出：{"items":[{"equip":"air_compressor","quantity":3,"ageYears":10,"ageText":"10 年以上","note":null},{"equip":"hvac","quantity":null,"ageYears":null,"ageText":null,"note":null}],"mainProblems":["電費上升","夏季空調耗電"],"directions":["空壓機汰換為變頻機種","空調效率改善"],"openQuestions":["冷氣有幾台？","冷氣大約用了幾年？"]}

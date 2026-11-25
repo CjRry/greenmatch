@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seedData } from '../../data/seed'
 import { buildFactoryFactPatch } from '../domain/factoryFacts'
 import type { Company, Factory, Need } from '../types'
-import { SUBSIDY_BY_ID, hpToKw, matchSubsidies, stageSubsidyReminders, taipeiToday } from './index'
+import { SUBSIDY_BY_ID, hpToKw, matchSubsidies, resolvePowerRate, stageSubsidyReminders, taipeiToday } from './index'
+import type { NeedItem } from '../types'
 
 const seed = seedData()
 const companies = seed.companies as Company[]
@@ -266,5 +267,53 @@ describe('matchSubsidies', () => {
     expect(espcReminder?.body).toContain('180 kW')
     expect(espcReminder?.body).toContain('已符合門檻')
     expect(espcReminder?.body).not.toContain('若契約容量達')
+  })
+})
+
+describe('動力與公用設備補助：依作業要點（115/01/29）基準表分機種', () => {
+  it('gives each machine type its own rate band', () => {
+    expect(resolvePowerRate('air_compressor', 37, 'compressor_fixed')).toMatchObject({ min: 900, max: 2500 })
+    expect(resolvePowerRate('air_compressor', 100, 'compressor_fixed')).toMatchObject({ min: 700, max: 2400 })
+    expect(resolvePowerRate('air_compressor', 37, 'compressor_vsd')).toMatchObject({ min: 1500, max: 3200 })
+    expect(resolvePowerRate('air_compressor', 100, 'compressor_vsd')).toMatchObject({ min: 1200, max: 3000 })
+    expect(resolvePowerRate('air_compressor', 37, 'compressor_piston')).toMatchObject({ min: 1000, max: 1100, subtypeLabel: '活塞式' })
+    expect(resolvePowerRate('pump_fan', 37, 'fan')).toMatchObject({ min: 2200, max: 2200 })
+    expect(resolvePowerRate('pump_fan', 40, 'fan')).toMatchObject({ min: 2000, max: 2000 })
+    expect(resolvePowerRate('pump_fan', 160, 'pump_single')).toMatchObject({ min: 4000, max: 4000 })
+    expect(resolvePowerRate('pump_fan', 160, 'pump_multi')).toMatchObject({ min: 4500, max: 4500 })
+  })
+  it('without a type, spans every type that is subsidised at that power', () => {
+    expect(resolvePowerRate('air_compressor', 37)).toMatchObject({ min: 900, max: 3200, subtypeLabel: null })
+    // 5 kW: variable-speed starts at 7.5 kW, so only fixed-speed and piston count.
+    expect(resolvePowerRate('air_compressor', 5)).toMatchObject({ min: 900, max: 2500 })
+    // 100 kW: piston compressors stop at 75 kW.
+    expect(resolvePowerRate('air_compressor', 100)).toMatchObject({ min: 700, max: 3000 })
+    expect(resolvePowerRate('pump_fan', 37)).toMatchObject({ min: 2200, max: 3500 })
+  })
+  it('rejects types outside their power range', () => {
+    expect(resolvePowerRate('air_compressor', 5, 'compressor_vsd')).toBeNull()
+    expect(resolvePowerRate('air_compressor', 90, 'compressor_piston')).toBeNull()
+    expect(resolvePowerRate('air_compressor', 250)).toBeNull()
+    expect(resolvePowerRate('pump_fan', 0.5)).toBeNull()
+  })
+  it('narrows the grant when the factory names the type, and asks for it when not', () => {
+    const run = (item: NeedItem) =>
+      matchSubsidies({
+        factory: factory('f01'),
+        need: { form: { items: [item], mainProblems: [], directions: [], openQuestions: [] }, budgetNtd: null },
+      }).items.find((i) => i.def.id === 'power-equipment')!
+    const piston = run({ equip: 'air_compressor', subtype: 'compressor_piston', quantity: 2, ratedKw: 22, ageYears: null })
+    expect(piston.status).toBe('likely')
+    // 2 × 22 kW × 1,000–1,100 × 1.2 (SME) = 52,800–58,080 → rounded
+    expect(piston.amount).toEqual({ min: 53_000, max: 58_000 })
+    expect(piston.reason).toContain('活塞式')
+    expect(piston.missingFields).not.toContain('機種（可縮小補助範圍）')
+
+    const unknown = run({ equip: 'air_compressor', quantity: 2, ratedKw: 22, ageYears: null })
+    expect(unknown.reason).toContain('未指定機種')
+    expect(unknown.missingFields).toContain('機種（可縮小補助範圍）')
+
+    const vsdTooSmall = run({ equip: 'air_compressor', subtype: 'compressor_vsd', quantity: 1, ratedKw: 5.5, ageYears: null })
+    expect(vsdTooSmall.status).toBe('not_applicable')
   })
 })

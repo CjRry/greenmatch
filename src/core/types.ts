@@ -163,8 +163,16 @@ export type Company = Factory | Vendor
  * One line of the standard need form (標準需求表): a piece of equipment. 'carbon_consulting' only
  * appears in needs saved before the platform dropped consulting firms; new needs never use it.
  */
+/**
+ * Machine type that sets the 動力與公用設備補助 rate (作業要點 115/01/29 第三點): rotary fixed-speed,
+ * rotary variable-speed or piston compressors; fans; single-stage (C80) or multi-stage (C40) pumps.
+ */
+export type PowerSubtype = 'compressor_fixed' | 'compressor_vsd' | 'compressor_piston' | 'fan' | 'pump_single' | 'pump_multi'
+
 export interface NeedItem {
   equip: Specialty
+  /** Only for air_compressor and pump_fan; null or missing = the factory does not know. */
+  subtype?: PowerSubtype | null
   quantity: number | null
   /** Rated power per unit in kW, when known. */
   ratedKw?: number | null

@@ -3,8 +3,8 @@
  * Pure and deterministic. It is both the offline demo and the fallback when Claude fails.
  */
 import { EQUIP_INFO, EQUIPS, SPECIALTIES, SPECIALTY_LABEL } from '../../../core/constants/equipment'
-import { hpToKw } from '../../../core/subsidies'
-import type { Equip, NeedForm, NeedItem, Specialty } from '../../../core/types'
+import { POWER_SUBTYPES, hpToKw } from '../../../core/subsidies'
+import type { Equip, NeedForm, NeedItem, PowerSubtype, Specialty } from '../../../core/types'
 import { CN_NUM, normalizeText, toNumber } from './numbers'
 
 const CARBON_KEYWORDS = ['碳盤查', '盤查', '碳排', 'ISO 14064', 'ISO14064', '14064', '溫室氣體', '碳足跡']
@@ -154,6 +154,26 @@ const PROBLEM_RULES: { test: RegExp; text: (t: string) => string }[] = [
 
 const unique = <T,>(xs: T[]) => [...new Set(xs)]
 
+/**
+ * The machine type the subsidy rate depends on, read from the words around the equipment
+ * (「想換變頻空壓機」→ variable-speed, 「活塞式」→ piston, 「多段泵浦」→ multi-stage). Null when unclear.
+ */
+export function detectPowerSubtype(equip: Specialty, keyword: string, clause: string): PowerSubtype | null {
+  if (equip === 'air_compressor') {
+    if (/活塞/.test(clause)) return 'compressor_piston'
+    if (/變頻|可變轉速|VSD/i.test(clause)) return 'compressor_vsd'
+    if (/定頻|定速|固定轉速/.test(clause)) return 'compressor_fixed'
+    return null
+  }
+  if (equip === 'pump_fan') {
+    if (/多段/.test(clause)) return 'pump_multi'
+    if (/單段/.test(clause)) return 'pump_single'
+    if (/風機|風扇|排風|送風|鼓風/.test(keyword) && !/泵/.test(clause)) return 'fan'
+    return null
+  }
+  return null
+}
+
 /** 空壓機 3 台… → the standard form. Never throws; empty text gives an empty form with questions. */
 export function parseNeed(raw: string): NeedForm {
   const text = normalizeText(raw)
@@ -168,6 +188,7 @@ export function parseNeed(raw: string): NeedForm {
     let quantity: number | null = null
     let age: { ageYears: number; ageText: string } | null = null
     let ratedKw: number | null = null
+    let subtype: PowerSubtype | null = null
     if (!isCarbon) {
       const q = findQuantity(text, hit, prevEnd, nextStart, used)
       if (q) {
@@ -182,17 +203,20 @@ export function parseNeed(raw: string): NeedForm {
       const before = beforeRaw.slice(Math.max(beforeRaw.lastIndexOf('，'), beforeRaw.lastIndexOf(','), beforeRaw.lastIndexOf('。')) + 1)
       age = parseAge(after) ?? parseAge(before)
       ratedKw = parseRatedKw(after) ?? parseRatedKw(before)
+      subtype = detectPowerSubtype(hit.equip, text.slice(hit.start, hit.end), before + text.slice(hit.start, hit.end) + after)
     }
     const existing = items.find((x) => x.equip === hit.equip)
     if (existing) {
       if (existing.quantity == null && quantity != null) existing.quantity = quantity
       if (existing.ratedKw == null && ratedKw != null) existing.ratedKw = ratedKw
+      if (existing.subtype == null && subtype != null) existing.subtype = subtype
       if (existing.ageYears == null && age) Object.assign(existing, age)
       return
     }
     items.push({
       equip: hit.equip,
       quantity,
+      ...(subtype != null ? { subtype } : {}),
       ...(ratedKw != null ? { ratedKw } : {}),
       ageYears: age?.ageYears ?? null,
       ageText: age?.ageText ?? null,
@@ -273,8 +297,11 @@ export function guardNeedForm(v: unknown): NeedForm | null {
     const qty = typeof it.quantity === 'number' && Number.isFinite(it.quantity) && it.quantity > 0 ? Math.round(it.quantity) : null
     const ratedKw = typeof it.ratedKw === 'number' && Number.isFinite(it.ratedKw) && it.ratedKw > 0 ? Math.round(it.ratedKw * 10) / 10 : null
     const age = typeof it.ageYears === 'number' && Number.isFinite(it.ageYears) && it.ageYears >= 0 ? Math.round(it.ageYears) : null
+    const subtypes = POWER_SUBTYPES[it.equip as Equip] as readonly string[] | undefined
+    const subtype = isStr(it.subtype) && subtypes?.includes(it.subtype) ? (it.subtype as PowerSubtype) : null
     items.push({
       equip: it.equip as Specialty,
+      ...(subtype ? { subtype } : {}),
       quantity: isCarbon ? null : qty,
       ...( !isCarbon && ratedKw != null ? { ratedKw } : {} ),
       ageYears: isCarbon ? null : age,

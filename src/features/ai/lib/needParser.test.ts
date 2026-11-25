@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { guardNeedForm, mentionsCarbonInventory, parseAge, parseMonthlyBillNtd, parseNeed, parseRatedKw, suggestTitle } from './needParser'
+import { detectPowerSubtype, guardNeedForm, mentionsCarbonInventory, parseAge, parseMonthlyBillNtd, parseNeed, parseRatedKw, suggestTitle } from './needParser'
 
 const DECK = '我們工廠空壓機有 3 台，都用了十幾年，最近電費越來越高，夏天冷氣也很耗電'
 
@@ -142,5 +142,28 @@ describe('guardNeedForm', () => {
     expect(guardNeedForm({ ...ok, items: [{ equip: 'hvac', quantity: '3', ageYears: -1 }] })?.items[0]).toMatchObject({ quantity: null, ageYears: null })
     expect(guardNeedForm({ ...ok, monthlyElectricBillNtd: 270000 })?.monthlyElectricBillNtd).toBe(270000)
     expect(guardNeedForm({ ...ok, monthlyElectricBillNtd: -5 })?.monthlyElectricBillNtd).toBeUndefined()
+  })
+})
+
+describe('machine type for the power-equipment subsidy', () => {
+  it('reads the compressor or pump type from the words around it', () => {
+    expect(parseNeed('想換 2 台變頻空壓機').items[0].subtype).toBe('compressor_vsd')
+    expect(parseNeed('活塞式空壓機 1 台用了 15 年').items[0].subtype).toBe('compressor_piston')
+    expect(parseNeed('空壓機 3 台').items[0].subtype).toBeUndefined()
+    expect(detectPowerSubtype('pump_fan', '泵浦', '冷卻水多段泵浦 2 台')).toBe('pump_multi')
+    expect(detectPowerSubtype('pump_fan', '排風機', '排風機 4 台')).toBe('fan')
+    expect(detectPowerSubtype('hvac', '冷氣', '變頻冷氣')).toBeNull()
+  })
+  it('keeps a valid type from Claude and drops an invalid one', () => {
+    const f = guardNeedForm({
+      items: [
+        { equip: 'air_compressor', subtype: 'compressor_piston', quantity: 1 },
+        { equip: 'pump_fan', subtype: 'compressor_vsd', quantity: 1 },
+      ],
+      mainProblems: [],
+      directions: [],
+      openQuestions: [],
+    })
+    expect(f?.items.map((i) => i.subtype ?? null)).toEqual(['compressor_piston', null])
   })
 })
