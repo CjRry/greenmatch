@@ -5,7 +5,7 @@ import { paths } from '../core/paths'
 import { useSession } from '../core/session'
 import { useCollection } from '../core/store/StoreProvider'
 import type { Role } from '../core/types'
-import { cx } from '../ui'
+import { cx, useToast } from '../ui'
 import { ModeBanner } from './ModeBanner'
 import { PersonaSwitcher } from './PersonaSwitcher'
 
@@ -61,14 +61,20 @@ function BrandMark() {
 interface GuideStep {
   to: string
   label: string
+  /** Set only on a step whose label says it switches company: sign in as this company first. */
+  switchTo?: { id: string; name: string }
 }
+
+const ACCEPTANCE_STAGES = new Set(['acceptance', 'compare'])
 
 function TrialGuideBar({ role, isDemo }: { role: Role | null; isDemo: boolean }) {
   const { companyId, signInAs } = useSession()
   const cases = useCollection('cases')
   const quotes = useCollection('quotes')
+  const companies = useCollection('companies')
   const navigate = useNavigate()
   const location = useLocation()
+  const toast = useToast()
 
   const factoryCases = (cases ?? [])
     .filter((c) => c.factoryId === companyId)
@@ -78,6 +84,11 @@ function TrialGuideBar({ role, isDemo }: { role: Role | null; isDemo: boolean })
   // case c12 has none). Falls back to the demo case c01.
   const quotedCaseIds = new Set((quotes ?? []).map((q) => q.caseId))
   const ownQuotedCaseId = factoryCases.find((c) => quotedCaseIds.has(c.id))?.id
+  // Step ⑤ shows acceptance and the before/after saving: this factory's own case there, else (demo
+  // accounts only) the demo case waiting for acceptance, behind a button that says it switches.
+  const ownAcceptCaseId = factoryCases.find((c) => ACCEPTANCE_STAGES.has(c.stage))?.id
+  const demoAcceptCase = (cases ?? []).find((c) => c.stage === 'acceptance' && c.status === 'active')
+  const demoAcceptFactory = demoAcceptCase ? (companies ?? []).find((c) => c.id === demoAcceptCase.factoryId && c.isDemo) : undefined
 
   const vendorCases = (cases ?? [])
     .filter((c) => c.shortlist.includes(companyId ?? '') || c.selectedVendorId === companyId)
@@ -96,14 +107,24 @@ function TrialGuideBar({ role, isDemo }: { role: Role | null; isDemo: boolean })
     navigate(targetPath)
   }
 
-  // Steps never switch the signed-in company: they open this company's own records, or the
-  // workspace when it has none yet (the workspace says how to start).
+  // Steps open this company's own records, or the workspace when it has none yet (the workspace says
+  // how to start). Only step ⑤ may switch company, and its label says so.
   const factoryCaseId = ownQuotedCaseId ?? ownFactoryCaseId
+  const acceptStep: GuideStep = ownAcceptCaseId
+    ? { to: paths.case(ownAcceptCaseId), label: '⑤ 驗收與節電成效' }
+    : isDemo && demoAcceptCase && demoAcceptFactory
+      ? {
+          to: paths.case(demoAcceptCase.id),
+          label: `⑤ 驗收示範（切換為${demoAcceptFactory.name.replace(/(股份)?有限公司$/, '')}）`,
+          switchTo: { id: demoAcceptFactory.id, name: demoAcceptFactory.name },
+        }
+      : { to: paths.me(), label: '⑤ 驗收與節電成效' }
   const factorySteps: GuideStep[] = [
     { to: paths.newNeed(), label: '① 口語登記需求' },
     { to: ownFactoryCaseId ? paths.caseMatch(ownFactoryCaseId) : paths.me(), label: '② 推薦與補助試算' },
     { to: factoryCaseId ? paths.caseQuotes(factoryCaseId) : paths.me(), label: '③ 報價比價與回本' },
     { to: ownFactoryCaseId ? paths.case(ownFactoryCaseId) : paths.me(), label: '④ 8 階段追蹤' },
+    acceptStep,
   ]
 
   const vendorSteps: GuideStep[] = [
@@ -122,6 +143,22 @@ function TrialGuideBar({ role, isDemo }: { role: Role | null; isDemo: boolean })
           ? 'border-brand bg-brand font-bold text-on-brand'
           : 'border-line-strong bg-surface text-ink-soft hover:border-brand hover:text-ink',
       )
+      if (s.switchTo) {
+        const target = s.switchTo
+        return (
+          <button
+            key={s.label}
+            type="button"
+            className={cls}
+            onClick={() => {
+              quickTry(target.id, s.to)
+              toast({ title: `已切換為${target.name}`, body: '可從右上角切回原本的身分', tone: 'success' })
+            }}
+          >
+            {s.label}
+          </button>
+        )
+      }
       return (
         <Link key={s.label} to={s.to} className={cls}>
           {s.label}

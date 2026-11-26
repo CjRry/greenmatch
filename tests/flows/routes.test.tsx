@@ -121,6 +121,20 @@ describe('試用導覽列對自行註冊公司不會撞牆 (OBS-0002 #3)', () =>
     expect(await screen.findByText('旭東塑膠射出有限公司')).toBeTruthy()
     expect(screen.queryByText('永豐金屬工業股份有限公司')).toBeNull()
   })
+
+  it('「⑤ 驗收」：有驗收案件的工廠直接連到自己的案件', async () => {
+    renderApp(routes, { url: '/new-need', companyId: 'f05' })
+    const guide = await screen.findByRole('region', { name: '3 分鐘試用導覽' })
+    expect(within(guide).getByRole('link', { name: '⑤ 驗收與節電成效' }).getAttribute('href')).toBe('/cases/c05')
+  })
+
+  it('「⑤ 驗收」：其他示範工廠看到寫明要切換的按鈕，按下後以明德精密打開驗收案件', async () => {
+    renderApp(routes, { url: '/new-need', companyId: 'f02' })
+    const guide = await screen.findByRole('region', { name: '3 分鐘試用導覽' })
+    fireEvent.click(within(guide).getByRole('button', { name: '⑤ 驗收示範（切換為明德精密電子）' }))
+    expect(await screen.findByText('已切換為明德精密電子有限公司')).toBeTruthy()
+    expect(await screen.findByRole('button', { name: '驗收通過' })).toBeTruthy()
+  })
 })
 
 describe('案件中心單頁 Tabs (/cases/:id)', () => {
