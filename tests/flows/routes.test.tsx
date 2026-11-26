@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { routes } from '../../src/app/routes'
 import { setCapabilityOverride } from '../../src/core/runtime'
 import { fixtureData } from '../../src/test/fixtures'
@@ -95,19 +95,31 @@ describe('載入頁面時不會呼叫 Claude', () => {
 })
 
 describe('試用導覽列對自行註冊公司不會撞牆 (OBS-0002 #3)', () => {
-  it('無案件的自行註冊工廠點「④ 8 階段追蹤」會切進示範案例而非無權限', async () => {
+  it('無案件的自行註冊工廠：②–④ 留在自己的工作台，不切換身分、不撞無權限', async () => {
     const base = fixtureData()
     const companies = base.companies ?? []
     const newFactory = { ...companies.find((c) => c.id === 'f01')!, id: 'f_self', name: '自註工廠', isDemo: false }
     renderApp(routes, {
-      url: '/me',
+      url: '/cases/c01',
       companyId: 'f_self',
       data: { ...base, companies: [...companies, newFactory] },
     })
-    const btn = await screen.findByRole('button', { name: '④ 8 階段追蹤' })
-    fireEvent.click(btn)
-    await screen.findByText('案件進度')
-    expect(screen.queryByText('你沒有權限查看這個案件')).toBeNull()
+    const guide = await screen.findByRole('region', { name: '3 分鐘試用導覽' })
+    for (const name of ['② 推薦與補助試算', '③ 報價比價與回本', '④ 8 階段追蹤']) {
+      const link = within(guide).getByRole('link', { name })
+      expect(link.getAttribute('href')).toBe('/me')
+    }
+    expect(within(guide).queryByRole('button')).toBeNull()
+  })
+
+  it('有案件但還沒有報價的工廠點「③ 報價比價與回本」仍是自己，打開自己案件的報價頁', async () => {
+    renderApp(routes, { url: '/new-need', companyId: 'f02' })
+    const guide = await screen.findByRole('region', { name: '3 分鐘試用導覽' })
+    const link = within(guide).getByRole('link', { name: '③ 報價比價與回本' })
+    expect(link.getAttribute('href')).toMatch(/^\/cases\/[^/]+\/quotes$/)
+    fireEvent.click(link)
+    expect(await screen.findByText('旭東塑膠射出有限公司')).toBeTruthy()
+    expect(screen.queryByText('永豐金屬工業股份有限公司')).toBeNull()
   })
 })
 

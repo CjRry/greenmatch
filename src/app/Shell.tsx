@@ -61,8 +61,6 @@ function BrandMark() {
 interface GuideStep {
   to: string
   label: string
-  /** If set and the viewer does not own this demo record, switch to this demo persona first. */
-  demoPersonaId?: string
 }
 
 function TrialGuideBar({ role, isDemo }: { role: Role | null; isDemo: boolean }) {
@@ -98,33 +96,20 @@ function TrialGuideBar({ role, isDemo }: { role: Role | null; isDemo: boolean })
     navigate(targetPath)
   }
 
+  // Steps never switch the signed-in company: they open this company's own records, or the
+  // workspace when it has none yet (the workspace says how to start).
+  const factoryCaseId = ownQuotedCaseId ?? ownFactoryCaseId
   const factorySteps: GuideStep[] = [
     { to: paths.newNeed(), label: '① 口語登記需求' },
-    {
-      to: paths.caseMatch(ownFactoryCaseId ?? 'c01'),
-      label: '② 推薦與補助試算',
-      demoPersonaId: ownFactoryCaseId || companyId === 'f01' ? undefined : 'f01',
-    },
-    {
-      to: paths.caseQuotes(ownQuotedCaseId ?? 'c01'),
-      label: '③ 報價比價與回本',
-      demoPersonaId: ownQuotedCaseId || companyId === 'f01' ? undefined : 'f01',
-    },
-    {
-      to: paths.case(ownFactoryCaseId ?? 'c01'),
-      label: '④ 8 階段追蹤',
-      demoPersonaId: ownFactoryCaseId || companyId === 'f01' ? undefined : 'f01',
-    },
+    { to: ownFactoryCaseId ? paths.caseMatch(ownFactoryCaseId) : paths.me(), label: '② 推薦與補助試算' },
+    { to: factoryCaseId ? paths.caseQuotes(factoryCaseId) : paths.me(), label: '③ 報價比價與回本' },
+    { to: ownFactoryCaseId ? paths.case(ownFactoryCaseId) : paths.me(), label: '④ 8 階段追蹤' },
   ]
 
   const vendorSteps: GuideStep[] = [
     { to: paths.needs(), label: '① 需求市集找案源' },
     { to: paths.need('n14'), label: '② 標準需求表規格' },
-    {
-      to: paths.case(ownVendorCaseId ?? 'c02'),
-      label: '③ 受邀案件工作台',
-      demoPersonaId: ownVendorCaseId || companyId === 'v01' ? undefined : 'v01',
-    },
+    { to: ownVendorCaseId ? paths.case(ownVendorCaseId) : paths.me(), label: '③ 受邀案件工作台' },
     { to: paths.vendor(companyId ?? 'v01'), label: '④ 實績與補助標章' },
   ]
 
@@ -137,20 +122,6 @@ function TrialGuideBar({ role, isDemo }: { role: Role | null; isDemo: boolean })
           ? 'border-brand bg-brand font-bold text-on-brand'
           : 'border-line-strong bg-surface text-ink-soft hover:border-brand hover:text-ink',
       )
-      if (s.demoPersonaId) {
-        const personaId = s.demoPersonaId
-        return (
-          <button
-            key={s.label}
-            type="button"
-            onClick={() => quickTry(personaId, s.to)}
-            title="切換示範身分預覽此步驟"
-            className={cls}
-          >
-            {s.label}
-          </button>
-        )
-      }
       return (
         <Link key={s.label} to={s.to} className={cls}>
           {s.label}
